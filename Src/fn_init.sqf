@@ -47,16 +47,7 @@ if (isMultiplayer) then {
 		};
 	} forEach allUsers;
 
-	// fast connected clients protect
-	/*_code = {
-		{
-			(getUserInfo _x) params ["","_owner"];
-			if (_owner > 2) then {
-				SERVER_PASSWORD serverCommand (format["#kick %1 Сервер ещё не загружен.",_owner]);
-			};
-		} forEach allUsers;
-	};
-	server_internal_preInit_kickHandle = startUpdate(_code,1);*/
+	// fast connected clients protect (disabled)
 
 
 	//base decl funcs

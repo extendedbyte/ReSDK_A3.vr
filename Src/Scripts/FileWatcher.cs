@@ -10,6 +10,8 @@ using System.IO;
 
 class FileWatcher : IScript
 {
+	FileSystemWatcher fws = null;
+
 	public void Init()
 	{
 
@@ -17,103 +19,92 @@ class FileWatcher : IScript
 
 	public void Destroy()
 	{
-		if (fsObj!= null)
+		if (fws != null)
 		{
-			fsObj.Dispose();
+			fws.Dispose();
+			fws = null;
 		}
 	}
 
-	private FileSystemWatcher fsObj;
-	
 	public void Command(string args, StringBuilder output)
 	{
-		try
+		switch (args)
 		{
-			if (args == "init")
-			{
-				if (ScriptContext.GetArgsCount() != 3)
+			case "start":
+				if (ScriptContext.GetArgsCount() < 2)
 				{
-					Console.WriteLine("		WARN: fws arguments error");
-					return;
+					output.Append("error");
+					break;
 				}
-
-				bool needLogs = ScriptContext.GetArg(2) != "";
-
-				if (fsObj != null)
-				{
-					if (needLogs)
-						Console.WriteLine("		WARN: fws not null");
-					return;
-				}
-
-				string pathAbs = ScriptContext.GetArg(0);
-				string filter = ScriptContext.GetArg(1);
 				
-				fsObj = new FileSystemWatcher(pathAbs, filter);
+				if (fws != null)
+				{
+					output.Append("error");
+					break;
+				}
 
-				fsObj.Disposed += FsObj_Disposed;
+				try
+				{
+					string pathWatching = ScriptContext.GetArg(0);
+					string filter = ScriptContext.GetArg(1);
+					
+					if (!Directory.Exists(pathWatching))
+					{
+						output.Append("path_not_found");
+						break;
+					}
 
-				fsObj.NotifyFilter = 
-					/*NotifyFilters.Attributes
-					|*/ NotifyFilters.FileName
-					| NotifyFilters.LastWrite
-					//| NotifyFilters.Size
-					| NotifyFilters.DirectoryName
-					//| NotifyFilters.CreationTime
-					;
+					fws = new FileSystemWatcher();
+					fws.Path = pathWatching;
+					fws.Filter = filter;
+					fws.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+					fws.IncludeSubdirectories = true;
 
-				fsObj.Created += FsObj_Created;
-				fsObj.Deleted += FsObj_Deleted;
-				fsObj.Renamed += FsObj_Renamed;
-				fsObj.Changed += FsObj_Changed;
-				fsObj.Error += FsObj_Error;
+					fws.Changed += OnChanged;
+					fws.Created += OnChanged;
+					fws.Deleted += OnChanged;
+					fws.Renamed += OnRenamed;
+					fws.Error += OnError;
 
-				fsObj.EnableRaisingEvents = true;
-				fsObj.IncludeSubdirectories = true;
+					fws.EnableRaisingEvents = true;
 
-				if (needLogs)
-					Console.WriteLine($"		FWS STARTED: {pathAbs} ({filter})");
-			}
-		} catch (Exception ex)
-		{
-			Console.WriteLine($"		ERROR: FWS command exception: {ex.Message}");
+					string pathAbs = Path.GetFullPath(pathWatching);
+					
+					output.Append("ok");
+				}
+				catch (Exception ex)
+				{
+					output.Append("error");
+				}
+				break;
+			case "stop":
+				if (fws != null)
+				{
+					fws.Dispose();
+					fws = null;
+					output.Append("ok");
+				}
+				else
+				{
+					output.Append("error");
+				}
+				break;
 		}
-		
-	}
-	private static string EncodingToRV(string str) => Encoding.GetEncoding(1251).GetString(Encoding.GetEncoding(65001).GetBytes(str));
-	private void OnUpdate(string path,string changemode = "unknown",string cevent = "unkcevent")
-	{
-		ScriptContext.AddCallback("FileWatcher_handleCallbackExtension", new []{EncodingToRV(path), changemode, cevent});
 	}
 
-	private void FsObj_Changed(object sender, FileSystemEventArgs e)
+	private void OnChanged(object source, FileSystemEventArgs e)
 	{
-		OnUpdate(e.FullPath,e.ChangeType.ToString(),"change");
+		ScriptContext.AddCallback("file_watcher_callback", new[] { $"file_changed;{e.FullPath};{e.ChangeType}" });
 	}
 
-	private void FsObj_Renamed(object sender, RenamedEventArgs e)
+	private void OnRenamed(object source, RenamedEventArgs e)
 	{
-		OnUpdate(e.FullPath,e.ChangeType.ToString(),"rename");
+		ScriptContext.AddCallback("file_watcher_callback", new[] { $"file_renamed;{e.OldFullPath};{e.FullPath}" });
 	}
 
-	private void FsObj_Deleted(object sender, FileSystemEventArgs e)
+	private void OnError(object source, ErrorEventArgs e)
 	{
-		OnUpdate(e.FullPath,e.ChangeType.ToString(),"delete");
-	}
-
-	private void FsObj_Created(object sender, FileSystemEventArgs e)
-	{
-		OnUpdate(e.FullPath, e.ChangeType.ToString(), "create");
-	}
-
-	private void FsObj_Error(object sender, ErrorEventArgs e)
-	{
-		Console.WriteLine($"FWS ERROR: {e.GetException().Message}");
-	}
-
-	private void FsObj_Disposed(object sender, EventArgs e)
-	{
-		Console.WriteLine("FWS DESTROYED");
+		ScriptContext.AddCallback("file_watcher_callback", new[] { $"error;{e.GetException().Message}" });
 	}
 }
 

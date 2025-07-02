@@ -37,9 +37,7 @@ class RBuilder : IScript
             tcpClient = new TcpClient(serverIp, serverPort);
             if (tcpClient.Connected)
             {
-                // Начать асинхронное чтение сообщений
                 Task.Run(ReceiveMessagesAsync);
-                //print("Client started!");
             }
             return tcpClient.Connected;
         } 
@@ -66,13 +64,11 @@ class RBuilder : IScript
                     string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     string rm = EncodingToRV(receivedMessage);
                     print($"Received message from server: {rm}");
-                    //ScriptContext.AddCallback("rbuilder_callback",new[]{rm});
                     messages.Enqueue(rm);
                     
                 }
                 else
                 {
-                    // Сервер закрыл соединение
                     print("Server disconnected");
                     Environment.Exit(-5502);
                     break;
@@ -95,7 +91,6 @@ class RBuilder : IScript
             if (tcpClient.Connected)
             {
                 NetworkStream stream = tcpClient.GetStream();
-                //add end terminator
                 message += "\0";
                 byte[] messageBytes = Encoding.UTF8.GetBytes(message);
                 stream.Write(messageBytes, 0, messageBytes.Length);
@@ -147,7 +142,7 @@ class RBuilder : IScript
                 if (ScriptContext.GetArgsCount() > 1) par = ScriptContext.GetArg(1);
                 if (message == "print")
                 {
-                    par = par.Replace(";","");
+                    par = par.Replace(";","");
                 }
                 string msnd = $"m:{message};{par}";
                 SendMessage(msnd);
@@ -163,13 +158,6 @@ class RBuilder : IScript
                 int argPID = int.Parse(ScriptContext.GetArg(0));
                 this.parentApplicationPID = argPID;
                 break;
-            // case "write_data":
-            //     if (ScriptContext.GetArgsCount() != 1) return;
-            //     string contentConsole__ = ScriptContext.GetArg(0);
-            //     Process powner = System.Diagnostics.Process.GetProcessById(this.parentApplicationPID);
-            //     Console.WriteLine($"pown {powner}: {contentConsole__}");
-            //     powner.StandardInput.WriteLine(contentConsole__);
-            //     break;
             case "exit":
                 if (ScriptContext.GetArgsCount() != 1) return;
                 int arg = int.Parse(ScriptContext.GetArg(0));
@@ -185,8 +173,6 @@ class RBuilder : IScript
                 string path = ScriptContext.GetArg(0);
                 
                 if (File.Exists(path)) File.Delete(path);
-
-                // read stdout from current process and write into path
 
                 using (var reader = new StreamReader(Console.OpenStandardOutput()))
                 {

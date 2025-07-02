@@ -97,7 +97,6 @@ class FileManager : IScript
 					{
 						copyTo = Path.Combine(copyTo, Path.GetFileName(copyFrom));
 					}
-					Console.WriteLine($"from {copyFrom} to {copyTo}");
 					File.Copy(copyFrom, copyTo,bool.Parse(ScriptContext.GetArg(2)));
 				} catch (Exception excopy)
 				{
@@ -111,13 +110,9 @@ class FileManager : IScript
 				{
 					string moveFrom = ScriptContext.GetArg(0);
 					string moveTo = ScriptContext.GetArg(1);
-					
-					Console.WriteLine($"path type from {GetPathType(moveFrom)}");
-					Console.WriteLine($"path type to {GetPathType(moveTo)}");
 
 					if (GetPathType(moveFrom) == PathType.Directory && GetPathType(moveTo) == PathType.Invalid)
 					{
-						Console.WriteLine($"dir from {moveFrom} to {moveTo}");
 						Directory.Move(moveFrom, moveTo);
 						output.Append(true);
 						break;
@@ -129,7 +124,6 @@ class FileManager : IScript
 					{
 						moveTo = Path.Combine(moveTo, Path.GetFileName(moveFrom));
 					}
-					Console.WriteLine($"from {moveFrom} to {moveTo}");
 					File.Move(moveFrom, moveTo);
 				}
 				catch (Exception exmove)
@@ -146,7 +140,7 @@ class FileManager : IScript
 				output.Append(Directory.Exists(ScriptContext.GetArg(0)));
 				break;
 			case "Read":
-				string readedText = EncodingToRV( //данные полученные не из движка так же надо конвертировать...
+				string readedText = EncodingToRV(
 					File.ReadAllText(ScriptContext.GetArg(0))
 				);
 				if (ScriptContext.GetArgsCount() > 1)
@@ -192,8 +186,6 @@ class FileManager : IScript
 			case "FolderDelete":
 				Directory.Delete(ScriptContext.GetArg(0),true);
 				break;
-			//seraching
-			//not used in src code...
 			case "SetRetAbsPath":
 				if (ScriptContext.GetArgsCount()>=1)
 				{
@@ -245,7 +237,7 @@ class FileManager : IScript
 				ScriptContext.ConvertListToGame(output, files.ToArray());
 				break;
 			case "GetFileEnumerator":
-				lastEnumerateFiles.Clear(); //clear enumerator
+				lastEnumerateFiles.Clear();
 
 				option = SearchOption.TopDirectoryOnly;
 				pattern = "*.*";
@@ -317,7 +309,6 @@ class FileManager : IScript
 	[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
 	private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
-	//close all platform file handlers
 	private static async void FreeFileLock()
 	{
 		IntPtr taskbarWindow = FindWindow("Shell_TrayWnd", null);
@@ -328,9 +319,7 @@ class FileManager : IScript
 		{
 			Process currentProcess = Process.GetCurrentProcess();
 			IntPtr currentWindow = currentProcess.MainWindowHandle;
-			//Console.WriteLine("Асинхронная задача 1 начата");
-			await Task.Delay(1); // Асинхронная операция
-			//Console.WriteLine("Асинхронная задача 1 завершена");
+			await Task.Delay(1);
 			SetForegroundWindow(currentWindow);
 			SetFocus(currentWindow);
 		});

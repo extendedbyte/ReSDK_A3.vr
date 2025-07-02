@@ -57,6 +57,41 @@ class WorkspaceHelper : IScript
 			case "getworkdir":
 				output.Append(ScriptContext.GetAppDir());
 				break;
+			case "run_cmd":
+				ProcessStartInfo startInfo = new ProcessStartInfo()
+				{
+					FileName = "cmd.exe",
+					Arguments = "/C " + ScriptContext.GetArg(0),
+					UseShellExecute = false,
+					RedirectStandardOutput = true,
+					CreateNoWindow = true
+				};
+				using (Process process = Process.Start(startInfo))
+				{
+					output.Append(process.StandardOutput.ReadToEnd());
+				}
+				break;
+			case "set_permissions":
+				if (ScriptContext.GetArgsCount() != 2)
+				{
+					output.Append("error args");
+					break;
+				}
+				string filePath = ScriptContext.GetArg(0);
+				string attributes = ScriptContext.GetArg(1).ToLower();
+				FileAttributes currentAttribs = File.GetAttributes(filePath);
+
+				if (attributes == "readonly")
+				{
+					File.SetAttributes(filePath, currentAttribs | FileAttributes.ReadOnly);
+				}
+				else if (attributes == "normal")
+				{
+					File.SetAttributes(filePath, currentAttribs & ~FileAttributes.ReadOnly);
+				}
+
+				output.Append("ok");
+				break;
 			default:
 				Console.WriteLine("Error command: " + args);
 				break;
