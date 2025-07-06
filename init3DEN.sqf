@@ -24,7 +24,7 @@ compileEditor = {
 	//getEdenMenu menuDelete [8];
 };	
 
-_mainMenu = getEdenMenu menuAdd [[], "RelcitaEditor"];
+_mainMenu = getEdenMenu menuAdd [[], "RelictaEditor"];
 
 _item = getEdenMenu menuAdd [[_mainMenu], "Prepare client-side scripts"];
 getEdenMenu menuSetAction [[_mainMenu,_item], 'call compile preprocessFile "src\packClientOnly.sqf";'];*/
