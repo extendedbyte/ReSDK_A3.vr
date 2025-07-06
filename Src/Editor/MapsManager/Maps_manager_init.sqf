@@ -6,122 +6,213 @@
 // Основные настройки менеджера карт
 mm_use_alg2_vdir_check = true; // дополнительная валидация сериализации поворота/трансформации объекта
 
-mm_folderSaveMaps = "Maps";
+mm_folderSaveMaps = getMissionPath "src\host\MapManager\Maps\";
 mm_internal_defaultMapExt = ".sqf";
 
 // Подключаем модули менеджера карт
 #include "Maps_manager_common.sqf"
 #include "Maps_manager_importOld.sqf"
-#include "Maps_manager_virtualMap.sqf"
-#include "Maps_manager_batchProcessor.sqf"
 
 /*
-	Инициализация менеджера карт
+	Интерфейс для виртуального сборщика карт
+	Вызывает функции из DynamicMapLoader.sqf
 */
-function(mm_init)
+
+/*
+	Виртуальная сборка текущей карты
+*/
+function(mm_virtualBuildCurrentMap)
 {
-	["Инициализация менеджера карт"] call printLog;
+	private _mapName = "missionName" call golib_getCommonStorageParam;
+	private _mapPath = core_path_maps + "\" + _mapName + core_path_binarizedMapFileExt;
 	
-	// Проверяем существование папки для сохранения карт
-	if !([mm_folderSaveMaps] call file_folderExists) then {
-		["Создание папки для сохранения карт: %1", mm_folderSaveMaps] call printLog;
-		[mm_folderSaveMaps] call file_createFolder;
+	if !([_mapPath] call file_exists) exitWith {
+		["Файл карты не найден: %1", _mapPath] call showError;
+		false
 	};
 	
-	// Инициализируем переменные виртуального сборщика
-	mm_virt_errorCount = 0;
-	mm_virt_errorText = "";
-	mm_virt_currentMapData = createHashMap;
+	// Сначала сохраняем текущую карту
+	[false] call mm_saveCurrentMapToFile;
 	
-	// Инициализируем переменные пакетного процессора
-	mm_batch_currentMapIndex = 0;
-	mm_batch_totalMaps = 0;
-	mm_batch_processedMaps = [];
-	mm_batch_failedMaps = [];
-	mm_batch_isRunning = false;
+	["Запуск виртуальной сборки карты: %1", _mapName] call showInfo;
 	
-	["Менеджер карт инициализирован"] call printLog;
+	// Вызываем виртуальный сборщик
+	private _result = [_mapPath] call dml_parseMap;
+	_result params ["_success", "_instructions"];
+	
+	if (_success) then {
+		// Сохраняем результат
+		private _outputPath = mm_folderSaveMaps + _mapName + mm_internal_defaultMapExt;
+		private _saveResult = [_outputPath, str _instructions, false] call file_write;
+		
+		if (_saveResult) then {
+			["Виртуальная сборка завершена успешно: %1", _outputPath] call showInfo;
+		} else {
+			["Ошибка сохранения файла: %1", _outputPath] call showError;
+		};
+	} else {
+		["Ошибка виртуальной сборки карты"] call showError;
+	};
+	
+	_success
 };
 
 /*
-	Расширенное меню сборки карт
+	Валидация текущей карты
 */
-function(mm_showBuildMenu)
+function(mm_virtualValidateCurrentMap)
+{
+	private _mapName = "missionName" call golib_getCommonStorageParam;
+	private _mapPath = core_path_maps + "\" + _mapName + core_path_binarizedMapFileExt;
+	
+	if !([_mapPath] call file_exists) exitWith {
+		["Файл карты не найден: %1", _mapPath] call showError;
+		false
+	};
+	
+	// Сначала сохраняем текущую карту
+	[false] call mm_saveCurrentMapToFile;
+	
+	["Запуск валидации карты: %1", _mapName] call showInfo;
+	
+	// Вызываем валидацию
+	private _result = [_mapPath] call dml_validateMap;
+	
+	if (_result) then {
+		["✓ Валидация карты %1 прошла успешно", _mapName] call showInfo;
+	} else {
+		["✗ Валидация карты %1 завершилась с ошибками (смотрите лог)", _mapName] call showWarning;
+	};
+	
+	_result
+};
+
+/*
+	Миграция текущей карты
+*/
+function(mm_virtualMigrateCurrentMap)
+{
+	private _mapName = "missionName" call golib_getCommonStorageParam;
+	private _mapPath = core_path_maps + "\" + _mapName + core_path_binarizedMapFileExt;
+	private _targetVersion = "version" call golib_getCommonStorageParam;
+	
+	if !([_mapPath] call file_exists) exitWith {
+		["Файл карты не найден: %1", _mapPath] call showError;
+		false
+	};
+	
+	// Сначала сохраняем текущую карту
+	[false] call mm_saveCurrentMapToFile;
+	
+	["Запуск миграции карты %1 до версии %2", _mapName, _targetVersion] call showInfo;
+	
+	// Вызываем миграцию
+	private _result = [_mapPath, _targetVersion] call dml_migrateMap;
+	
+	if (_result) then {
+		["✓ Миграция карты %1 завершена успешно", _mapName] call showInfo;
+	} else {
+		["✗ Миграция карты %1 завершилась с ошибками (смотрите лог)", _mapName] call showWarning;
+	};
+	
+	_result
+};
+
+/*
+	Пакетная обработка всех карт
+*/
+function(mm_virtualBatchProcessMaps)
+{
+	params ["_operation", ["_options", createHashMap]];
+	
+	["Запуск пакетной обработки: %1", _operation] call showInfo;
+	
+	// Путь к папке с картами 
+	private _mapsFolder = core_path_maps;
+	
+	// Вызываем пакетную обработку
+	private _result = [_mapsFolder, _operation, _options] call dml_batchProcessMaps;
+	_result params ["_successCount", "_failCount", "_processedMaps", "_failedMaps"];
+	
+	// Показываем результат
+	if (_failCount == 0) then {
+		["✓ Пакетная обработка завершена успешно: %1 карт обработано", _successCount] call showInfo;
+	} else {
+		["⚠ Пакетная обработка завершена с ошибками: %1 успешно, %2 ошибок", _successCount, _failCount] call showWarning;
+	};
+	
+	_result
+};
+
+/*
+	Расширенное меню виртуального сборщика
+*/
+function(mm_showVirtualBuilderMenu)
 {
 	private _menuItems = [
 		["Обычная сборка", { [] call mm_build }],
-		["Виртуальная сборка текущей карты", { 
-			private _mapName = "missionName" call golib_getCommonStorageParam;
-			[_mapName, []] call mm_virt_build;
-		}],
-		["Валидация текущей карты", {
-			private _mapName = "missionName" call golib_getCommonStorageParam;
-			[_mapName, ["validate-only"]] call mm_virt_build;
-		}],
 		["---", {}],
-		["Пакетная обработка всех карт", { [] call mm_batch_buildAllMaps }],
-		["Валидация всех карт", { [] call mm_batch_validateAllMaps }],
-		["Миграция всех карт", { [] call mm_batch_migrateAllMaps }],
+		["Виртуальная сборка текущей карты", { [] call mm_virtualBuildCurrentMap }],
+		["Валидация текущей карты", { [] call mm_virtualValidateCurrentMap }],
+		["Миграция текущей карты", { [] call mm_virtualMigrateCurrentMap }],
 		["---", {}],
-		["Статус пакетной обработки", { [] call mm_batch_getStatus }],
-		["Остановить пакетную обработку", { [] call mm_batch_stop }]
+		["Пакетная сборка всех карт", { 
+			["build", createHashMap] call mm_virtualBatchProcessMaps 
+		}],
+		["Валидация всех карт", { 
+			["validate", createHashMap] call mm_virtualBatchProcessMaps 
+		}],
+		["Миграция всех карт", { 
+			private _targetVersion = "version" call golib_getCommonStorageParam;
+			private _options = createHashMap;
+			_options set ["targetVersion", _targetVersion];
+			["migrate", _options] call mm_virtualBatchProcessMaps 
+		}]
 	];
 	
-	[_menuItems, "Меню сборки карт"] call control_createMenu;
+	[_menuItems, "Виртуальный сборщик карт"] call control_createMenu;
 };
 
 /*
 	Команды для консоли разработчика
 */
-function(mm_registerConsoleCommands)
+function(mm_registerVirtualBuilderCommands)
 {
 	// Виртуальная сборка
 	registerConsoleCommand("vbuild", {
-		params [["_mapName", ""], ["_options", []]];
-		if (_mapName == "") then {
-			_mapName = "missionName" call golib_getCommonStorageParam;
-		};
-		[_mapName, _options] call mm_virt_build;
-	}, "Виртуальная сборка карты. Использование: vbuild [имя_карты] [опции]");
+		[] call mm_virtualBuildCurrentMap;
+	}, "Виртуальная сборка текущей карты");
 	
 	// Валидация карты
 	registerConsoleCommand("validate", {
-		params [["_mapName", ""]];
-		if (_mapName == "") then {
-			_mapName = "missionName" call golib_getCommonStorageParam;
-		};
-		[_mapName, ["validate-only"]] call mm_virt_build;
-	}, "Валидация карты. Использование: validate [имя_карты]");
+		[] call mm_virtualValidateCurrentMap;
+	}, "Валидация текущей карты");
 	
-	// Пакетная обработка
+	// Миграция карты  
+	registerConsoleCommand("migrate", {
+		[] call mm_virtualMigrateCurrentMap;
+	}, "Миграция текущей карты");
+	
+	// Пакетная сборка
 	registerConsoleCommand("batch_build", {
-		params [["_options", []]];
-		[_options] call mm_batch_buildAllMaps;
-	}, "Пакетная сборка всех карт. Использование: batch_build [опции]");
+		["build", createHashMap] call mm_virtualBatchProcessMaps;
+	}, "Пакетная сборка всех карт");
 	
 	registerConsoleCommand("batch_validate", {
-		[] call mm_batch_validateAllMaps;
+		["validate", createHashMap] call mm_virtualBatchProcessMaps;
 	}, "Валидация всех карт");
 	
 	registerConsoleCommand("batch_migrate", {
-		[] call mm_batch_migrateAllMaps;
+		private _targetVersion = "version" call golib_getCommonStorageParam;
+		private _options = createHashMap;
+		_options set ["targetVersion", _targetVersion];
+		["migrate", _options] call mm_virtualBatchProcessMaps;
 	}, "Миграция всех карт");
 	
-	registerConsoleCommand("batch_status", {
-		[] call mm_batch_getStatus;
-	}, "Статус пакетной обработки");
-	
-	registerConsoleCommand("batch_stop", {
-		[] call mm_batch_stop;
-	}, "Остановка пакетной обработки");
-	
-	["Зарегистрированы консольные команды для менеджера карт"] call printTrace;
+	["Зарегистрированы команды виртуального сборщика"] call printTrace;
 };
-
-// Автоматическая инициализация при загрузке
-[] call mm_init;
 
 // Регистрируем консольные команды если доступна система команд
 if (!isNil "registerConsoleCommand") then {
-	[] call mm_registerConsoleCommands;
+	[] call mm_registerVirtualBuilderCommands;
 };
