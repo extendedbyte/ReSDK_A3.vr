@@ -115,7 +115,7 @@ dml_convertRotation = {
 	([_eulerAngles] call dml_internal_eulerToVec) params ["_vectorDir", "_vectorUp"];
 	
 	// Вычисляем азимут (направление) в градусах
-	private _azimuth = (atan2 (_vectorDir select 0, _vectorDir select 1)) * dml_const_radToDeg;
+	private _azimuth = ((_vectorDir select 0) atan2 (_vectorDir select 1)) * dml_const_radToDeg;
 	if (_azimuth < 0) then { _azimuth = _azimuth + 360; };
 	
 	[_azimuth, _vectorDir, _vectorUp]
