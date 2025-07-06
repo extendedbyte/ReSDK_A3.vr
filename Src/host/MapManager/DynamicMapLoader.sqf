@@ -146,11 +146,7 @@ dml_validateMap = {
 		} forEach _errorList;
 	};
 	
-	traceformat("Map validation %1: %2 objects processed, %3 errors", 
-		ifcheck(_isValid,"PASSED","FAILED"), 
-		_bmap getv(_generated), 
-		count _errorList
-	);
+	traceformat("Map validation %1: %2 objects processed, %3 errors", ifcheck(_isValid,"PASSED","FAILED"), _bmap getv(_generated), count _errorList);
 	
 	_isValid
 };
@@ -211,7 +207,7 @@ dml_applyMigrations = {
 		{
 			private _entity = _y;
 			if (_entity isEqualType createHashMap && 
-				{_entity getOrDefault ["type", ""] == "Land_Orange_01_F"}) then {
+				(_entity getOrDefault ["type", ""] == "Land_Orange_01_F")) then {
 				
 				private _attributes = _entity getOrDefault ["attributes", createHashMap];
 				private _init = _attributes getOrDefault ["init", ""];
@@ -243,7 +239,7 @@ dml_detectMapVersion = {
 		{
 			private _entity = _y;
 			if (_entity isEqualType createHashMap && 
-				{_entity getOrDefault ["type", ""] == "Land_Orange_01_F"}) then {
+				(_entity getOrDefault ["type", ""] == "Land_Orange_01_F")) then {
 				
 				private _attributes = _entity getOrDefault ["attributes", createHashMap];
 				private _init = _attributes getOrDefault ["init", ""];
@@ -307,8 +303,7 @@ dml_batchProcessMaps = {
 		
 	} forEach _mapFiles;
 	
-	traceformat("Batch %1 completed: %2 success, %3 failed", 
-		_operation, count _processedMaps, count _failedMaps);
+	traceformat("Batch %1 completed: %2 success, %3 failed", _operation, count _processedMaps, count _failedMaps);
 	
 	if (count _failedMaps > 0) then {
 		errorformat("Failed maps: %1", _failedMaps joinString ", ");
