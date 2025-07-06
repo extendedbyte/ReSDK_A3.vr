@@ -10,8 +10,8 @@
 namespace(VoiceSystem,vs_)
 
 //Новый алгоритм затухания звука
-macro_def(vs_use_new_algoritm_voice_intersection)
-#define VOICE_USE_NEW_ALGORITM_VOICE_INTERSECTION
+macro_def(vs_use_new_algorithm_voice_intersection)
+#define VOICE_USE_NEW_ALGORITHM_VOICE_INTERSECTION
 
 #include "VoiceSystem_uncategorized.sqf"
 

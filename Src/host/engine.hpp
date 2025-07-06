@@ -704,7 +704,7 @@ ACRE_IS_ERRORED = false; _ret;}*/
 //указывает путь узлов для регистрации функций. Должен быть указан в заголовке инициализатора модуля
 
 //макрос проверки разрешения инициализации модуля (для генератора биндингов)
-#define IS_INIT_MODULE isNullVar(__FUNCITONS_LOAD_ONLY__)
+#define IS_INIT_MODULE isNullVar(__FUNCTIONS_LOAD_ONLY__)
 
 //регистрация поля класса в библиотеке
 /*

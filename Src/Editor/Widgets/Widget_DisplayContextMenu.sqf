@@ -6,7 +6,7 @@
 /*
 	DCM - Display Context Menu
 
-	Use this if need creating contextMenu in display, opened with funciton displayOpen
+	Use this if need creating contextMenu in display, opened with function displayOpen
 */
 
 init_function(dcm_initialize)

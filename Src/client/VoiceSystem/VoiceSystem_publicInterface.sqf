@@ -698,7 +698,7 @@ vs_calcVoiceIntersection = {
 			3.1 Плюсуем отрезок от глаз до точки пересечения
 		4. Вычитаем из дистанции общее расстояние
 	*/
-	#ifdef VOICE_USE_NEW_ALGORITM_VOICE_INTERSECTION
+	#ifdef VOICE_USE_NEW_ALGORITHM_VOICE_INTERSECTION
 		
 		_plaEyePos = eyepos player;
 		
