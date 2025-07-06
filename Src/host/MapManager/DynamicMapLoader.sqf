@@ -16,6 +16,8 @@ struct(BinaryMapInstructions)
 	def(_generated) 0; 
 
 	def(_allSpawnPoints) null;
+	def(_validationMode) false; // Режим только валидации без генерации кода
+	def(_migrateMode) false; // Режим миграции версий
 
 	def(init)
 	{
@@ -23,6 +25,8 @@ struct(BinaryMapInstructions)
 		self setv(_buffer,[]);
 		self setv(_bufferEnd,[]);
 		self setv(_allSpawnPoints,[]);
+		self setv(_validationMode,false);
+		self setv(_migrateMode,false);
 	}
 
 	def(isSuccessBuild) {(self getv(_errorCount)) == 0}
@@ -47,6 +51,11 @@ struct(BinaryMapInstructions)
 
 	def(prepareCode)
 	{
+		if (self getv(_validationMode)) exitWith {
+			// В режиме валидации возвращаем пустую функцию
+			compile "{}"
+		};
+		
 		private _buff = array_copy(self getv(_buffer));
 		private _buffEnd = self getv(_bufferEnd);
 		_buff append _buffEnd;
@@ -76,7 +85,232 @@ dml_internal_eulerToVec = {
 	_vectorDirAndUp
 };
 
+// Константы для конвертации
 dml_const_zOffset = 6.04903;
+dml_const_radToDeg = 180 / pi;
+
+// Улучшенные конверторы позиций и поворотов
+dml_convertPosition = {
+	params ["_pos3den", "_atlOffset"];
+	
+	// Конвертируем из формата 3DEN [x,z,y] в игровой [x,y,z]
+	private _gamePos = [
+		_pos3den select 0,           // x остается x
+		_pos3den select 2,           // z становится y  
+		(_pos3den select 1) - _atlOffset  // y становится z с учетом ATL offset
+	];
+	
+	// Применяем коррекцию высоты если необходимо
+	if ((_gamePos select 2) > 1000) then {
+		_gamePos set [2, (_gamePos select 2) - dml_const_zOffset];
+	};
+	
+	_gamePos
+};
+
+dml_convertRotation = {
+	params ["_eulerAngles"];
+	
+	// Используем существующую функцию для получения векторов направления
+	([_eulerAngles] call dml_internal_eulerToVec) params ["_vectorDir", "_vectorUp"];
+	
+	// Вычисляем азимут (направление) в градусах
+	private _azimuth = ((_vectorDir select 0) atan2 (_vectorDir select 1)) * dml_const_radToDeg;
+	if (_azimuth < 0) then { _azimuth = _azimuth + 360; };
+	
+	[_azimuth, _vectorDir, _vectorUp]
+};
+
+// Функция валидации карты
+dml_validateMap = {
+	params ["_mapPath"];
+	
+	private _cfg = LoadConfig _mapPath;
+	if (isNull _cfg) exitWith {
+		setLastError("Cannot load config: " + _mapPath);
+		false
+	};
+	
+	private _cfgMap = _cfg call dml_prepMapConfig;
+	private _bmap = struct_new(BinaryMapInstructions);
+	_bmap setv(_validationMode, true);
+
+	[_cfgMap,_bmap] call dml_prepareMapBuffer;
+
+	private _isValid = _bmap callv(isSuccessBuild);
+	private _errorList = _bmap getv(_errorList);
+	
+	if (!_isValid) then {
+		{
+			errorformat("Validation error: %1", _x);
+		} forEach _errorList;
+	};
+	
+	traceformat("Map validation %1: %2 objects processed, %3 errors", ifcheck(_isValid,"PASSED","FAILED"), _bmap getv(_generated), count _errorList);
+	
+	_isValid
+};
+
+// Функция миграции версии карты
+dml_migrateMap = {
+	params ["_mapPath", "_targetVersion"];
+	
+	traceformat("Starting map migration to version %1", _targetVersion);
+	
+	private _cfg = LoadConfig _mapPath;
+	if (isNull _cfg) exitWith {
+		setLastError("Cannot load config for migration: " + _mapPath);
+		false
+	};
+	
+	private _cfgMap = _cfg call dml_prepMapConfig;
+	private _bmap = struct_new(BinaryMapInstructions);
+	_bmap setv(_migrateMode, true);
+
+	// Применяем миграции к конфигурации
+	_cfgMap = [_cfgMap, _targetVersion] call dml_applyMigrations;
+	
+	[_cfgMap,_bmap] call dml_prepareMapBuffer;
+
+	if !(_bmap callv(isSuccessBuild)) exitWith {
+		setLastError("Error on migrating map: " + _mapPath);
+		false
+	};
+
+	traceformat("Map migration completed: %1 objects migrated", _bmap getv(_generated));
+	true
+};
+
+// Применение миграций к конфигурации карты
+dml_applyMigrations = {
+	params ["_cfgMap", "_targetVersion"];
+	
+	// Определяем текущую версию карты
+	private _currentVersion = [_cfgMap] call dml_detectMapVersion;
+	
+	if (_currentVersion == _targetVersion) exitWith {
+		traceformat("Map already at target version %1", _targetVersion);
+		_cfgMap
+	};
+	
+	traceformat("Migrating from %1 to %2", _currentVersion, _targetVersion);
+	
+	// Здесь можно добавить специфичные миграции для разных версий
+	// Например:
+	// if (_currentVersion == "1.0" && _targetVersion == "1.1") then {
+	//     _cfgMap = [_cfgMap] call dml_migrate_1_0_to_1_1;
+	// };
+	
+	// Обновляем версию в метаданных
+	private _entities = [_cfgMap, "Mission\Entities"] call dml_internal_getPath;
+	if (!isNil "_entities") then {
+		{
+			private _entity = _y;
+			if (_entity isEqualType createHashMap && 
+				(_entity getOrDefault ["type", ""] == "Land_Orange_01_F")) then {
+				
+				private _attributes = _entity getOrDefault ["attributes", createHashMap];
+				private _init = _attributes getOrDefault ["init", ""];
+				
+				if (_init != "") then {
+					// Обновляем версию в метаданных карты
+					private _initData = call (call compile _init);
+					if ("missionName" in _initData) then {
+						_initData set ["version", _targetVersion];
+						_attributes set ["init", str _initData];
+					};
+				};
+			};
+		} forEach _entities;
+	};
+	
+	_cfgMap
+};
+
+// Определение версии карты
+dml_detectMapVersion = {
+	params ["_cfgMap"];
+	
+	private _version = "unknown";
+	
+	// Ищем объект с метаданными карты (обычно Land_Orange_01_F)
+	private _entities = [_cfgMap, "Mission\Entities"] call dml_internal_getPath;
+	if (!isNil "_entities") then {
+		{
+			private _entity = _y;
+			if (_entity isEqualType createHashMap && 
+				(_entity getOrDefault ["type", ""] == "Land_Orange_01_F")) then {
+				
+				private _attributes = _entity getOrDefault ["attributes", createHashMap];
+				private _init = _attributes getOrDefault ["init", ""];
+				
+				if (_init != "") then {
+					private _initData = call (call compile _init);
+					if ("version" in _initData) then {
+						_version = _initData get "version";
+					};
+				};
+			};
+		} forEach _entities;
+	};
+	
+	// Если версия не найдена, пытаемся определить по структуре
+	if (_version == "unknown") then {
+		_version = "legacy";
+	};
+	
+	_version
+};
+
+// Пакетная обработка карт
+dml_batchProcessMaps = {
+	params ["_mapFolder", "_operation", ["_options", []]];
+	
+	private _mapFiles = [_mapFolder] call file_getFileList;
+	private _processedMaps = [];
+	private _failedMaps = [];
+	
+	traceformat("Starting batch %1 for %2 maps", _operation, count _mapFiles);
+	
+	{
+		private _mapPath = _mapFolder + "\" + _x;
+		private _mapName = [_x, ".cpp", ""] call str_replace;
+		
+		traceformat("Processing map %1 (%2/%3)", _mapName, _foreachIndex + 1, count _mapFiles);
+		
+		private _result = false;
+		switch (_operation) do {
+			case "validate": {
+				_result = [_mapPath] call dml_validateMap;
+			};
+			case "migrate": {
+				private _targetVersion = _options getOrDefault ["targetVersion", "1.0"];
+				_result = [_mapPath, _targetVersion] call dml_migrateMap;
+			};
+			case "build": {
+				_result = [_mapPath] call dml_parseMap;
+				_result = _result select 0;
+			};
+		};
+		
+		if (_result) then {
+			_processedMaps pushBack _mapName;
+			traceformat("✓ %1 completed for %2", _operation, _mapName);
+		} else {
+			_failedMaps pushBack _mapName;
+			errorformat("✗ %1 failed for %2", _operation, _mapName);
+		};
+		
+	} forEach _mapFiles;
+	
+	traceformat("Batch %1 completed: %2 success, %3 failed", _operation, count _processedMaps, count _failedMaps);
+	
+	if (count _failedMaps > 0) then {
+		errorformat("Failed maps: %1", _failedMaps joinString ", ");
+	};
+	
+	[count _processedMaps, count _failedMaps, _processedMaps, _failedMaps]
+};
 
 //загрузчик карты
 dml_loadMap = {
@@ -86,7 +320,6 @@ dml_loadMap = {
 		call _instr;
 	};
 };
-
 
 //подготовка загрузочных инструкций
 dml_parseMap = {
@@ -118,7 +351,10 @@ dml_prepareMapBuffer = {
 		_bmap callp(printErr,"Error on get object root tree");
 	};
 
-	[_bmap] call dml_internal_addMapHeaders;
+	// Добавляем заголовки только если не в режиме валидации
+	if (!(_bmap getv(_validationMode))) then {
+		[_bmap] call dml_internal_addMapHeaders;
+	};
 
 	private _itCount = _objlist get "items";
 	{
@@ -202,7 +438,6 @@ dml_internal_handleObj = {
 	//deser hash: call (call compile _serializedData)
 	private _posI = _mapDat get "positioninfo" get "position"; //x,z,y
 	private _atlOffset = _mapDat get "atloffset";
-	_posI = [_posI select 0,_posI select 2,(_posI select 1) - _atlOffset];
 	private _rotI = _mapDat get "positioninfo" get "angles";
 	private _hashData = _mapDat get "attributes" get "init";
 	private _otype = _mapDat get "type"; //normal classname
@@ -210,8 +445,14 @@ dml_internal_handleObj = {
 	private _hd = deserializeHashData(_hashData);
 	if ("missionName" in _hd && {_otype == "Land_Orange_01_F"}) exitWith {
 		private _mapVersion = _hd get "version";
-		//??todo check map version??
+		traceformat("Map metadata object found, version: %1", _mapVersion);
 		
+		// В режиме валидации проверяем версию
+		if (_bmap getv(_validationMode)) then {
+			if (isNil "_mapVersion" || _mapVersion == "") then {
+				_bmap callp(printErr, "Map version not specified in metadata");
+			};
+		};
 	};
 
 	if (count _hd == 0) exitWith {
@@ -251,12 +492,9 @@ dml_internal_handleObj = {
 		_realocModel = _model;
 	};
 
-	private _pos = _posI;//todo check convert to atl, for example -> z-side:: 10.4 => 4.3
-	//TODO convert euler angles to vdir/vup
-	
-	([_rotI] call dml_internal_eulerToVec) params ["_pVD","_pVU"];
-	private _vdir = 0;
-	private _vup = [0,0,1];
+	// УЛУЧШЕННАЯ КОНВЕРТАЦИЯ ПОЗИЦИЙ И ПОВОРОТОВ
+	private _pos = [_posI, _atlOffset] call dml_convertPosition;
+	([_rotI] call dml_convertRotation) params ["_vdir", "_vectorDir", "_vup"];
 
 	private _randSpawn = false;
 	private _randSpawnString = "";
@@ -424,6 +662,11 @@ dml_internal_handleObj = {
 
 	if (_tryErrorOnInit) exitWith {};
 
+	// В режиме валидации не генерируем код
+	if (_bmap getv(_validationMode)) exitWith {
+		_bmap setv(_generated,(_bmap getv(_generated)) + 1);
+	};
+
 	private _atlPos = _pos;
 	private _poses = ((_atlPos select 0) toFixed sizeof_float) + ((_atlPos select 1) toFixed sizeof_float) + ((_atlPos select 2) toFixed sizeof_float);
 	private _varname = "_" + (_poses splitString "-." joinString "_");
@@ -449,39 +692,19 @@ dml_internal_handleObj = {
 		_initCodeArgs pushBack format["go_editor_globalRefs set [""%1"",%2];",_registeredMark,"_thisObj"] + endl;
 	};
 
+	// Дополнительная обработка сложных поворотов
 	if not_equals(_vup,vec3(0,0,1)) then {
-		//! TODO getPosWorld impl
-		_pos = _pos + [true]; // convert poscoords
-		private __probNewDir = [0,0,1];//!vectorDir _obj
-		private _zPosVDir = parseNumber((__probNewDir select 2) toFixed 1);
+		_pos = _pos + [true]; // convert poscoords для объектов с нестандартной ориентацией
+		
+		// Используем реальные векторы направления вместо заглушек
+		private _zPosVDir = parseNumber((_vectorDir select 2) toFixed 1);
 		private _editedVdir = false;
 		if equalTypes(_vdir,"") then {_editedVdir = true}; //if rdir enabled then do not override vdir
 
 		if (_zPosVDir <= -0.85 || _zPosVDir >= 0.85 && !_editedVdir) then {
-			_vdir = __probNewDir;
+			_vdir = _vectorDir;
 			_editedVdir = true;
 		};
-
-		//!---------- rule2 transform serialization check 
-		// if (mm_use_alg2_vdir_check) then {
-		// 	private _transformVec = _obj call core_getPitchBankYaw;//do not use relative transform: _obj call golib_om_getRotation;
-		// 	//if (!_editedVdir && {(_transformVec select [0,2] apply {(abs _x) toFixed 0}) isNOTEQUALTO ["0","0"]}) then {
-		// 	if (!_editedVdir && {{_x=="0"}count(_transformVec apply {(abs _x) toFixed 0})<2 }) then {
-		// 		//post comparator rule: 2 fixed elements equals
-		// 		private _tempRes = 0;
-		// 		private _cmparr = _transformVec apply {_tempRes=parseNumber(abs _x toFixed 0);ifcheck(_tempRes<=2,"0",_tempRes toFixed 0)};
-		// 		private _condit = false;
-		// 		{
-		// 			private _thisX = _x;
-		// 			if ({_x == _thisX}count _cmparr >= 2) exitwith {_condit = true};
-		// 		} foreach _cmparr;
-		// 		if (_condit) exitwith {}; //exit from vdir check scope
-
-		// 		_vdir = __probNewDir;//(str __probNewDir) +"/* "+str _cmparr+" */" ;
-		// 		_editedVdir = true;
-		// 		eden_debug_vuplist pushBack _obj;
-		// 	};
-		// };
 	};
 
 	private _addictPost = "";
