@@ -120,7 +120,7 @@ ct_applyTheme = {
 		call _codeCall;
 	};
 };
-decl(any(string;string;int))
+decl(vector4|string(string;string;int))
 ct_internal_copy = {
 	params ["_name","_key","_line"];
  	if !(_name in ct_map_themes) exitWith {
@@ -146,7 +146,7 @@ ct_internal_copy = {
 } foreach ct_map_themes;
 
 //Возвращает цвет с карты
-decl(any(string))
+decl(vector4|string(string))
 ct_getValue = {
 	params ["_name"];
 	ct_map_colors getOrDefault [toLower _name,[1,0,0,1]];
