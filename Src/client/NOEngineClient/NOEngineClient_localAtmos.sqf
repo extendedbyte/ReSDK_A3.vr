@@ -89,7 +89,7 @@ acli_handleAddObj = {
 // acli_bitmask_getByOfs = {
 
 // };
-decl(any(vector3))
+decl(tuple<mesh[];int;vector3>(vector3))
 acli_getChunk = {
 	params ["_chid"];
 	private _chidS = str _chid;
@@ -101,7 +101,7 @@ acli_getChunk = {
 	acli_getChunk get _chidS
 };
 
-decl(NULL|any(vector3))
+decl(NULL|tuple<mesh[];int;vector3>(vector3))
 acli_getChunkUnsafe = {
 	params ["_chid"];
 	_chid = str _chid;
