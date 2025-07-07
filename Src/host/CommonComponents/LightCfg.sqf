@@ -4,11 +4,12 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-lightSys_null_t = null;
+decl(NULL) lightSys_null_t = null;
 
 //light config parser
-lightSys_prepConfig = {
+decl(string(string;int;ref;bool)) lightSys_prepConfig = {
 	params ["_content","_id","_refName",["_isServerPrep",false]];
 	private _patHeader = "regScriptEmit\((\w+)\)";
 	private _patFooter = "[\t ]*endScriptEmit[\t ]*$";
@@ -32,7 +33,7 @@ lightSys_prepConfig = {
 	_content
 };
 
-lightSys_registerConfig = {
+decl(bool(string;bool)) lightSys_registerConfig = {
 	params ["_content",["_isServer",false]];
 	private _rName = refcreate("");
 	private _prepCfg = [_content,lightSys_cfgId_cur,_rName,_isServer] call lightSys_prepConfig;
@@ -59,7 +60,7 @@ lightSys_replacer_client_header = "
 	params ['_source'];
 	_source setvariable [""__config"",%1];
 	private _allEmitters = [];
-	_source setVariable [""__allEmitters"",_allEmitters];
+	_source set Variable [""__allEmitters"",_allEmitters];
 	[(le_se_map get '%1')] call le_se_handleConfig;
 };	_semDat append [
 ";
@@ -77,26 +78,26 @@ lightSys_replacer_server_header = "
 lightSys_replacer_footer = "] ;"; 
 
 //assoc maps
-lightSys_assocCfg_keyId = createHashMap;
-lightSys_assocCfg_keyName = createHashMap;
+decl(map<int;string>) lightSys_assocCfg_keyId = createHashMap;
+decl(map<string;int>) lightSys_assocCfg_keyName = createHashMap;
 
 //base config id
-lightSys_cfgId_cur = 2100;
+decl(int) lightSys_cfgId_cur = 2100;
 
-lightSys_preInitialize = {
+decl(void()) lightSys_preInitialize = {
 	lightSys_cfgId_cur = 2100;
 	lightSys_assocCfg_keyId = createHashMap;
 	lightSys_assocCfg_keyName = createHashMap;
 };
 
 //get cfg name by id
-lightSys_getConfigNameById = {
+decl(string(int)) lightSys_getConfigNameById = {
 	params ["_id"];
 	lightSys_assocCfg_keyId getOrDefault [_id,""]
 };
 
 //get cfg id by name
-lightSys_getConfigIdByName = {
+decl(int(string)) lightSys_getConfigIdByName = {
 	params ["_name"];
 	#ifdef EDITOR
 	if !(_name in lightSys_assocCfg_keyName) exitWith {

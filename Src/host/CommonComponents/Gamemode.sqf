@@ -4,25 +4,26 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <..\GamemodeManager\GamemodeManager.hpp>
 
-_provider_isRoundPreLoad = {
+decl(bool()) _provider_isRoundPreLoad = {
 	gm_state == GAME_STATE_PRELOAD
 };
 
-_provider_isRoundLobby = {
+decl(bool()) _provider_isRoundLobby = {
 	gm_state == GAME_STATE_LOBBY
 };
 
-_provider_isRoundPlaying = {
+decl(bool()) _provider_isRoundPlaying = {
 	gm_state == GAME_STATE_PLAY
 };
 
-_provider_isRoundEnding = {
+decl(bool()) _provider_isRoundEnding = {
 	gm_state == GAME_STATE_END
 };
 
-_provider_getState = {
+decl(string(any)) _provider_getState = {
 	private _ind = [GAME_STATE_PRELOAD,GAME_STATE_LOBBY,GAME_STATE_PLAY,GAME_STATE_END] find _this;
 	if (_ind == -1) exitWith {
 		errorformat("Cant find game state enum %1. Returns unknown state",_this);
@@ -33,7 +34,7 @@ _provider_getState = {
 };
 
 // [">","GAME_STATE_PLAY"] call gmc_checkState
-_provider_checkState = {
+decl(bool(string;string)) _provider_checkState = {
 	params ["_comparer","_stateStr"];
 	
 	private _idx = ["GAME_STATE_PRELOAD","GAME_STATE_LOBBY","GAME_STATE_PLAY","GAME_STATE_END"] find _stateStr;

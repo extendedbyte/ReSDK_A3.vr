@@ -4,25 +4,26 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
 //Стандартная проверка отключенного редактора
 #ifdef EDITOR
-__editorEnabled = true;
+decl(bool) __editorEnabled = true;
 #else
-__standaloneEnabled = true;
+decl(bool) __standaloneEnabled = true;
 #endif
 
 //internal anticheat (check dataframes)
 if (isMultiplayer)then{
 	if (!isServer) then {
-		x_sync_frame = 0;
+		decl(int) x_sync_frame = 0;
 		onEachFrame {x_sync_frame = diag_frameNo};
 		addMissionEventHandler ["EachFrame", {
 			if (diag_frameNo != x_sync_frame) then {
 				[["EFHmod",diag_frameNo - x_sync_frame],{[remoteExecutedOwner,_this] call pre_oncheat}] remoteExecCall ["call",2]
 			};
 		}];
-		client_sendNotifToServer = {
+		decl(void(string)) client_sendNotifToServer = {
 			params ["_mes"];
 			[[_mes],{[_this select 0,remoteExecutedOwner] call pre_notifClientAssert}] remoteExecCall ["call",2];
 		};
@@ -33,11 +34,11 @@ if (isMultiplayer)then{
 
 //console helpers
 
-cprint_usestdout = true; //flag for standart console output
-cprint_isserver = isMultiplayer && isServer;
+decl(bool) cprint_usestdout = true; //flag for standart console output
+decl(bool) cprint_isserver = isMultiplayer && isServer;
 
 // ["PREFIX","message %1, arg %2, last %3",...,...] call stdoutPrint
-stdoutPrint = {
+decl(void(any[])) stdoutPrint = {
 	private _args = _this;
 	private _PREF = _args deleteAt 0;
 	private _color = _args deleteAt (count _args - 1);
@@ -45,7 +46,7 @@ stdoutPrint = {
 	__post_message_RB(_PREF + (format _args))
 };
 
-cprint = {
+decl(void(any[])) cprint = {
 	if (cprint_isserver) then {
 		"debug_console" callExtension (format _this + "#1111");
 		//Слишком частые логи вызывают падение системы уведомлений
@@ -61,7 +62,7 @@ cprint = {
 	__post_message_RB(format _this)
 };
 
-cprintErr = {
+decl(void(any[])) cprintErr = {
 	#define PRFX__ "ERROR: "
 	if (cprint_isserver) then {
 		"debug_console" callExtension (PRFX__ + format _this + "#1001");
@@ -77,7 +78,7 @@ cprintErr = {
 	__post_message_RB(PRFX__ + format _this)
 };
 
-cprintWarn = {
+decl(void(any[])) cprintWarn = {
 	#define PRFX__ "WARN: "
 
 	if (cprint_isserver) then {
@@ -126,12 +127,12 @@ if (!isServer) then {
 #define STRUCT_INIT_FUNCTIONS
 #include "..\struct.hpp"
 
-allThreads = []; //init thread pool
-hashMapNull = createHashMapFromArray [["__NULL_HASH_MAP__","__NULL_HASH_MAP__"]];
+decl(any[]) allThreads = []; //init thread pool
+decl(map<string;string>) hashMapNull = createHashMapFromArray [["__NULL_HASH_MAP__","__NULL_HASH_MAP__"]];
 
-table_hex = "0123456789abcdef"splitString stringEmpty;
+decl(string[]) table_hex = "0123456789abcdef"splitString stringEmpty;
 
-rpc_addEventGlobal = {
+decl(void(string;code)) rpc_addEventGlobal = {
 	params ["_eventName","_eventCode"];
 	if (isServer) then {
 		log("Added global RPC - " + _eventName)
@@ -150,7 +151,7 @@ rpc_addEventGlobal = {
 //replace this module
 
 //if (isValid(nullPtr)) then {} else {};
-rv_cppcheck = {
+decl(bool(any)) rv_cppcheck = {
 	private _val = _this select 0;
 
 	if isNullVar(_val) exitWith {false}; // проверка наличия значения
@@ -162,7 +163,7 @@ rv_cppcheck = {
 	true // not catched nullable
 };
 
-rv_sizeOf = {
+decl(int(any)) rv_sizeOf = {
 	#define __ptr_size__ 8
 	#define __num_size__ 8
 	#define __vector_size__ 24
@@ -198,22 +199,22 @@ if !isNull(ptr_htable) then {
 	#endif
 };
 
-ptr_i_mctr= 1;//internal memory counter
-ptr_i_al = 0; //allocated before realoc ( not used now...)
+decl(int) ptr_i_mctr= 1;//internal memory counter
+decl(int) ptr_i_al = 0; //allocated before realoc ( not used now...)
 #define C_PTR_REALOC_SIZE 1024
 #define C_PTR_BYTE_SITE 4
-ptr_cnl = __ptr_struct_internal__(str ptr_i_mctr,0); //null pointer
-ptr_htable = createHashMap;
+decl(any[]) ptr_cnl = __ptr_struct_internal__(str ptr_i_mctr,0); //null pointer
+decl(map<string;any[]>) ptr_htable = createHashMap;
 ptr_htable set [ptr_cnl select PTR_STRUCT_ADDRESS,ptr_cnl];
 
 //initialize new pointer
-ptr_create = {
+decl(any[](any)) ptr_create = {
 	private _pn = __ptr_struct_internal__(str ptr_i_mctr,_this);
 	ptr_htable set [_pn select 0,_pn];
 	_pn
 };
 //delete pointer if not null
-ptr_destroy = {
+decl(bool(any[])) ptr_destroy = {
 	if equals(ptr_cnl,_this) exitWith {false};
 	ptr_htable deleteAt (_this select PTR_STRUCT_ADDRESS);
 	_this set [PTR_STRUCT_ADDRESS,ptr_cnl select PTR_STRUCT_ADDRESS];
@@ -221,10 +222,10 @@ ptr_destroy = {
 	true
 };
 
-ptr_i_hex__ = "0123456789abcdef"splitString stringEmpty;
+decl(string[]) ptr_i_hex__ = "0123456789abcdef"splitString stringEmpty;
 
 //convert to string
-ptr_cts = {
+decl(string(any[])) ptr_cts = {
 	private _p = _this select PTR_STRUCT_ADDRESS;
 	_p = toArray _p;
 	if (count _p < C_PTR_BYTE_SITE) then {
@@ -256,20 +257,20 @@ ptr_cts = {
 	_s
 };
 
-ptr_remval = {
+decl(any[](any[])) ptr_remval = {
 	_poldv__ = _this select PTR_STRUCT_VALUE; //external reference _poldvm_g_
 	_this deleteAt PTR_STRUCT_VALUE;
 	_this
 };
 
-ptr_check = {
+decl(bool(any[])) ptr_check = {
 	count _this == 2 && (_this select PTR_STRUCT_ADDRESS)in ptr_htable
 };
 
 
 // "Штучка","Штучки","Штучек"
 //Склоняет слова в числительное
-toNumeralString = {
+decl(string(int;string[];bool)) toNumeralString = {
 	params ["_number",["_counter",["Штука","Штуки","Штук"]],["_addNumToText",false]];
 	private _factNum = _number;
 	_number = abs _number;
@@ -283,20 +284,20 @@ toNumeralString = {
 //==================================================================================================
 //regex helpers
 //==================================================================================================
-regex_isMatch = {
+decl(bool(string;string)) regex_isMatch = {
 	params ["_txt","_pattern"];
 	private _out = _txt regexfind [_pattern,0];
 	count _out > 0
 };
 
-regex_getFirstMatch = {
+decl(string(string;string;int)) regex_getFirstMatch = {
 	params ["_txt","_pattern",["_optMath",0]];
 	private _out = _txt regexfind [_pattern,0];
 	if (count _out > 0) exitWith {_out select 0 select _optMath select 0};
 	""
 };
 
-regex_getMatches = {
+decl(string[](string;string;int)) regex_getMatches = {
 	params ["_txt","_pattern",["_optMath",0]];
 	private _out = _txt regexfind [_pattern,0];
 	private _rList = [];
@@ -307,7 +308,7 @@ regex_getMatches = {
 	_rList
 };
 
-regex_replace = {
+decl(string(string;string;string)) regex_replace = {
 	params ["_txt","_pattern","_replacer"];
 	_txt regexReplace [_pattern,_replacer];
 };
@@ -359,20 +360,20 @@ cst_isComressed = {
 //==================================================================================================
 
 // Строковые хелперы
-stringStartWith = {
+decl(bool(string;string;bool)) stringStartWith = {
 	params ["_checked","_started",["_casesense",true]];
 	private _comparer = _checked select [0,count _started];
 	ifcheck(_casesense,equals(_comparer,_started),_comparer == _started)
 };
 
-stringEndWith = {
+decl(bool(string;string;bool)) stringEndWith = {
 	params ["_checked","_ended",["_casesense",true]];
 	private _cnt = count _ended;
 	private _comparer = _checked select [(count _checked) - _cnt,_cnt];
 	ifcheck(_casesense,equals(_comparer,_ended),_comparer == _ended)
 };
 
-stringReplace = {
+decl(string(string;string;string)) stringReplace = {
 	params [["_string", ""], ["_find", ""], ["_replace", ""]];
 	if (_find == "") exitWith {_string}; // "1" find "" -> 0
 
@@ -391,7 +392,7 @@ stringReplace = {
 };
 
 //Выбирает лучший случай [[2, -6, 4], {abs _x}] call selectBest
-selectBest = {
+decl(any(any[];code;any)) selectBest = {
 	params ["_array", "_criteria", "_return"];
 
 	private _bestScore = -1e99;
@@ -407,27 +408,27 @@ selectBest = {
 };
 
 
-searchInList = {
+decl(any(any[];code;any)) searchInList = {
 	params ["_list","_lambda","_defaultReturn"];
 	private _idx = _list findif _lambda;
 	if (_idx == -1) exitWith {_defaultReturn};
 	_list select _idx
 };
 
-arrayDeleteItem = {
+decl(bool(any[];any)) arrayDeleteItem = {
 	params["_a","_it"];
 	private _ix = _a findif {_it isequalto _x}; 
 	if (_ix != -1) then {_a deleteAt _ix}; 
 	_ix != -1
 };
 
-arrayIsValidIndex = {
+decl(bool(any[];int)) arrayIsValidIndex = {
 	params ["_a","_ix"];
 	count _a > 0 && {_ix < count _a} && {_ix >= 0}
 };
 
 //shuffle array elements, return alter array
-arrayShuffleOrig = {
+decl(any[](any[])) arrayShuffleOrig = {
 	params ["_array"];
 	private _tempArray = + _array;
 
@@ -439,14 +440,14 @@ arrayShuffleOrig = {
 };
 
 //swap 2 elements in array
-arraySwap = {
+decl(void(any[];int;int)) arraySwap = {
 	params ["_a","_is","_id"];
 	private _t = _a select _is;
 	_a set [_is,_a select _id];
 	_a set [_id,_t];
 };
 
-stringLength = {
+decl(int(string;bool)) stringLength = {
 	params ["_str",["_unicode",true]];
 	if (_unicode) then {
 		forceUnicode 1;
@@ -456,38 +457,38 @@ stringLength = {
 	};
 };
 
-stringSelect = {
+decl(string(string;int;int)) stringSelect = {
 	params ["_s","_i","_c"];
 	forceUnicode 1;
 	_s select [_i,_c];
 };
 
-randomFloat = {
+decl(float(float;float)) randomFloat = {
 	params ["_beg","_end"];
 	rand(_beg,_end)
 };
 
-randomInt = {
+decl(int(int;int)) randomInt = {
 	params ["_beg","_end"];
 	randInt(_beg,_end)
 };
 
-randomProbably = {
+decl(bool(float)) randomProbably = {
 	params ["_v"];
 	prob(_v)
 };
 
-getPrecentage = {
+decl(float(float;float)) getPrecentage = {
 	params ["_checkedval","_pval"];
 	precentage(_checkedval,_pval)
 };
 
-clampNumber = {
+decl(float(float;float;float)) clampNumber = {
 	params ["_v","_mi","_ma"];
 	clamp(_v,_mi,_ma)	
 };
 
-clampInRange = {
+decl(float(float;float;float)) clampInRange = {
 	params ["_v","_mi","_ma"];
 	private _fact = _ma * 2;
 	if (_v < _mi) exitWith {

@@ -4,6 +4,7 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
 //todo
 /*
@@ -17,7 +18,7 @@ BIS fnc colorRGBAtoTexture
 */
 #define importNative(funcname__) BIS_fnc_##funcname__
 #ifdef DEBUG
-	color_diagfonts = importNative(3DENDiagFonts);
+	decl(code) color_diagfonts = importNative(3DENDiagFonts);
 #endif
 
 
@@ -39,8 +40,8 @@ BIS fnc colorRGBAtoTexture
 "E0","E1","E2","E3","E4","E5","E6","E7","E8","E9","EA","EB","EC","ED","EE","EF",
 "F0","F1","F2","F3","F4","F5","F6","F7","F8","F9","FA","FB","FC","FD","FE","FF"
 ];*/
-color_hexTable256 = [];
-color_map_hexStrToNum = createHashMap;
+decl(string[]) color_hexTable256 = [];
+decl(map<string;int>) color_map_hexStrToNum = createHashMap;
 __inc = 0;
 for "_i" from 0 to 15 do {
 	for "_j" from 0 to 15 do {
@@ -54,7 +55,7 @@ for "_i" from 0 to 15 do {
 
 
 //свои
-color_RGBAtoHTML = {
+decl(string(float;float;float;float)) color_RGBAtoHTML = {
 	params ["_r","_g","_b","_a"];
 	private _ht = color_hexTable256;
 	format [
@@ -66,7 +67,7 @@ color_RGBAtoHTML = {
 	]
 };
 
-color_RGBtoHTML = {
+decl(string(float;float;float)) color_RGBtoHTML = {
 	params ["_r","_g","_b"];
 	private _ht = color_hexTable256;
 	format [
@@ -77,7 +78,7 @@ color_RGBtoHTML = {
 	]
 };
 
-color_RGBAtoTex = {
+decl(string(float;float;float;float)) color_RGBAtoTex = {
 	params ["_r","_g","_b",["_a",1]];
 
 	format [
@@ -89,7 +90,7 @@ color_RGBAtoTex = {
 	]
 };
 
-color_HTMLtoRGBA = {
+decl(vector4(string)) color_HTMLtoRGBA = {
 	params ["_html"];
 	if (_html select [0,1] == "#") then {
 		_html = _html select [1,count _html - 1];
@@ -111,7 +112,7 @@ color_HTMLtoRGBA = {
 	]
 };
 
-color_HTMLtoRGB = {
+decl(vector3(string)) color_HTMLtoRGB = {
 	params ["_html"];
 	if (_html select [0,1] == "#") then {
 		_html = _html select [1,count _html - 1];

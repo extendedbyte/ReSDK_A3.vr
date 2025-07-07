@@ -4,11 +4,12 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <..\..\client\Inventory\inventory.hpp>
 #include <..\GameObjects\Items\Item_HandAnim.hpp>
 
 
-smd_getAnimValue = {
+decl(int(actor;int;int)) smd_getAnimValue = {
 	params ["_mob","_slot",["_animType",ANIM_INDEX_HANDED]];
 	if !(_slot in INV_LIST_HANDS) exitWith {-1};
 	private _slotDat = _mob getVariable ["smd_s"+str _slot,0];
@@ -16,9 +17,9 @@ smd_getAnimValue = {
 	(_slotDat) select 1 select _animType
 };
 
-smd_isCombatModeEnabled = {params ["_mob"]; _mob getVariable ["smd_isCombat",false]};
+decl(bool(actor)) smd_isCombatModeEnabled = {params ["_mob"]; _mob getVariable ["smd_isCombat",false]};
 
-smd_isTwoHandedModeEnabled = {
+decl(bool(actor)) smd_isTwoHandedModeEnabled = {
 	params ["_mob"];
 	private _count = 0; private _hasFindTHFlag = false;
 	private _slotDat = 0;
@@ -32,9 +33,9 @@ smd_isTwoHandedModeEnabled = {
 	_count == 2 && _hasFindTHFlag
 };
 
-smd_isCustomAnimationEnabled = { params ["_mob"]; not_equals(_mob getvariable vec2("smd_custAnm",0),0)};
+decl(bool(actor)) smd_isCustomAnimationEnabled = { params ["_mob"]; not_equals(_mob getvariable vec2("smd_custAnm",0),0)};
 
-smd_internal_generateCustomAnimation = {
+decl(void(actor)) smd_internal_generateCustomAnimation = {
 	params ["_mob"];
 	//! WARNING ! - В этой функции используются локальные переменные, определенные в функции anim_syncAnim()
 	/*
@@ -55,12 +56,12 @@ smd_internal_generateCustomAnimation = {
 	_prefix = _prfx;
 };
 
-smd_isSitting = {
+decl(bool(actor)) smd_isSitting = {
 	params ["_mob"];
 	equals(TYPEOF(attachedto _mob),"C_Quadbike_01_F")
 };
 
-smd_isLyingOnBed = {
+decl(bool(actor)) smd_isLyingOnBed = {
 	params ["_mob"];
 	[_mob] call smd_isSitting && {equals((attachedto _mob) getVariable vec2("sitmode",""),"bed")}
 };

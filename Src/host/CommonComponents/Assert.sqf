@@ -5,8 +5,9 @@
 
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-sys_int_evalassert = {
+decl(bool(any)) sys_int_evalassert = {
 	params ["_value"];
 	
 	if isNullVar(_value) exitwith {false}; //
@@ -19,7 +20,7 @@ sys_int_evalassert = {
 	};
 };
 
-sys_static_assert_ = {
+decl(void(string;string;int;string)) sys_static_assert_ = {
 	params [["_expr","NO_EXPR"],["_module","UNK_MODULE"],["_line",0],["_message",""]];
 	
 	private _syslogprefix__ = "&SYSTEMLOG ";
@@ -67,7 +68,7 @@ sys_static_assert_ = {
 	#endif
 };
 
-sys_assert_ = {
+decl(void(string;string;int;string)) sys_assert_ = {
 	params [["_expr","NO_EXPR"],["_module","UNK_MODULE"],["_line",0],["_message",""]];
 
 	#ifdef EDITOR

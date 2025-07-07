@@ -4,21 +4,22 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 //penetration configs
 
 
 //common data
-pencfg_map_all = createHashMap;
+decl(map<string;vector2>) pencfg_map_all = createHashMap;
 
 #define addtobj(model,soundpen,armpen)  pencfg_map_all set [tolower model,[soundpen,armpen]]
 
-pencfg_isExistsModel = {
+decl(bool(mesh)) pencfg_isExistsModel = {
 	(
 		tolower ((getModelInfo _this)select 1)
 	) in pencfg_map_all
 };
 
-pencfg_handleVoice = {
+decl(float(mesh;float)) pencfg_handleVoice = {
 	params ["_obj","_srcDist"];
 
 	private _prMod = pencfg_map_all get (
@@ -34,7 +35,7 @@ pencfg_handleVoice = {
 	_srcDist - precentage(_srcDist,_prMod);
 };
 
-pencfg_handleObject_canPenetrate = {
+decl(bool(mesh)) pencfg_handleObject_canPenetrate = {
 	params ["_obj"];
 	private _probPen = pencfg_map_all get (
 		tolower ((getModelInfo _obj)select 1)

@@ -4,15 +4,16 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-TF_ADDON_VERSION = "TF RELICTA ADDON API 2.0";
+decl(string) TF_ADDON_VERSION = "TF RELICTA ADDON API 2.0";
 //список языков
-vs_list_langs = [
+decl(string[]) vs_list_langs = [
 	"human","eater","ghost","human_notongue","human_block"
 ];
 //список кого слышат эти персонажи
 //["eater",["eater","human"]] -> жруны слышат жрунов и людей
-vs_map_whohear = createHashMapFromArray [
+decl(map<string;string[]>) vs_map_whohear = createHashMapFromArray [
 	["human",["human"]],
 	["human_block",["human"]],
 	["human_notongue",["human"]],

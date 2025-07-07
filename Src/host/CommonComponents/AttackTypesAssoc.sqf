@@ -4,12 +4,13 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <..\..\client\Inventory\inventory.hpp>
 #include <..\CombatSystem\CombatSystem.hpp>
 #include <..\..\client\Interactions\interact.hpp>
 
 //эту функцию можно ускорить переделав выбор типа из хэшкарты
-ata_buf_process = {
+decl(any(any;string;bool)) ata_buf_process = {
 	params ["_ctx","_type","_mode"];
 	private _selectorSet = {
 		_2byte = _this;
@@ -87,7 +88,7 @@ ata_buf_process = {
 };
 
 //assoc for attack types
-ata_assoc_map = createHashMap;
+decl(map<int;vector2[]>) ata_assoc_map = createHashMap;
 _thurst_t = vec2(ATTACK_TYPE_THRUST,"Точечные удары");
 _swing_t = vec2(ATTACK_TYPE_SWING,"Размашистые удары");
 {

@@ -4,6 +4,7 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
 /*
 playSound3D [filename, soundSource, isInside, soundPosition, volume, soundPitch, distance, offset]
@@ -18,7 +19,7 @@ Parameters:
 	offset: Scalar - (Optional, default 0) Offset in seconds. Same as with playMusic
 */
 //динамический источник звука, удаление невозможно. Публикуется по сети
-soundGlobal_play = {
+decl(void(string;mesh|vector3;float;float;float;string;float;bool;bool)) soundGlobal_play = {
 	params ["_file","_source",["_vol",1],["_pitch",1],["_maxDist",20],["_soundExtension","ogg"],["_offset",0],["_isLocal",false],["_isRTProcess",false]];
 
 	FHEADER;
@@ -138,13 +139,13 @@ soundGlobal_play = {
 };
 
 //Аналог soundGlobal::play() но без репликации по сети
-soundLocal_play = {
+decl(void(string;mesh|vector3;float;float;float;string;float;bool;bool)) soundLocal_play = {
 	_this set [7,true];
 	_this call soundGlobal_play;
 };
 
 
-soundUI_play = {
+decl(void(string;float;float;bool;string)) soundUI_play = {
 	params ["_file", ["_volume",1], ["_soundPitch",1], ["_isEffect",false],["_soundExtension","ogg"]];
 
 	if (!("." in _file)) then {

@@ -4,10 +4,10 @@
 // ======================================================
 
 #include <..\engine.hpp>
-
+#include <..\lang.hpp>
 
 //регистрация переменной
-gv_rv = {
+decl(void(string;string;int;string)) gv_rv = {
 	params ["_name","_file","_line",["_moduleName","__undef__"]];
 
 	//придумать как распараллелить клиент и север в режиме дебага
@@ -38,7 +38,7 @@ gv_rv = {
 };
 
 //регистрация функции
-gv_rf = {
+decl(void(string;string;int;string)) gv_rf = {
 	params ["_name","_file","_line",["_moduleName","__undef__"]];
 
 	private _modulesMap = global_modules;
@@ -65,7 +65,7 @@ gv_rf = {
 };
 
 
-global_modules = createHashMap;
+decl(map<string;map<string;tuple<string;int>>>) global_modules = createHashMap;
 
 
 /*

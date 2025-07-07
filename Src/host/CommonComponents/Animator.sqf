@@ -4,14 +4,15 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <..\ServerRpc\serverRpc.hpp>
 
 #ifndef ANIMATOR_EDITOR
 
 #define addAnim(name) INC(__animIndex); anim_assocList_keyString set [name,__animIndex]; anim_assocList_keyInt set [__animIndex,name]
-anim_assocList_keyString = createHashMap; 
-anim_assocList_keyInt = createHashMap;
-__animIndex = 0;
+decl(map<string;int>) anim_assocList_keyString = createHashMap; 
+decl(map<int;string>) anim_assocList_keyInt = createHashMap;
+decl(int) __animIndex = 0;
 
 addAnim("xlamdoor");
 addAnim("traindoor");
@@ -25,7 +26,7 @@ addAnim("door_2_rot");
 addAnim("door_3_rot");
 
 //конвертор ассоциаций 
-anim_getAssoc = {
+decl(string|int(string|int)) anim_getAssoc = {
 	params ["_value"];
 	
 	private _hashmap = if equalTypes(_value,"") then {anim_assocList_keyString} else {anim_assocList_keyInt};
@@ -72,13 +73,13 @@ _anim = {
 #include <..\..\client\LightEngine\LightEngine.hpp>
 
 
-anim_getUnitAnim = {animationState _this};
+decl(string(actor)) anim_getUnitAnim = {animationState _this};
 
-anim_isSprinting = { private _anm = _this call anim_getUnitAnim; "evas" in _anm || "sprs" in _anm };
-anim_isRunning = { private _anm = _this call anim_getUnitAnim; "tacs" in _anm || "runs" in _anm};
-anim_isWalking = { "wlks" in (_this call anim_getUnitAnim)};
+decl(bool(actor)) anim_isSprinting = { private _anm = _this call anim_getUnitAnim; "evas" in _anm || "sprs" in _anm };
+decl(bool(actor)) anim_isRunning = { private _anm = _this call anim_getUnitAnim; "tacs" in _anm || "runs" in _anm};
+decl(bool(actor)) anim_isWalking = { "wlks" in (_this call anim_getUnitAnim)};
 
-anim_syncAnim = {
+decl(string(actor)) anim_syncAnim = {
 	params ["_mob"];
 	
 	#ifndef ANIMATOR_EDITOR
@@ -235,7 +236,7 @@ anim_syncAnim = {
 	_finalState
 };
 
-anim_doAttack = {
+decl(void(actor;int;int)) anim_doAttack = {
 	params ["_mob","_slotIdx","_enumAtt"];
 	
 	if (!local _mob) exitWith {
@@ -285,7 +286,7 @@ anim_doAttack = {
 	
 }; 
 
-anim_doDodge = {
+decl(void(actor;string)) anim_doDodge = {
 	params ["_mob","_side"];
 	//playing as bdy_dodbddghRddghLnlRnlL
 	//bdy_dodbddghRddghLnlRnlL
@@ -305,7 +306,7 @@ anim_doDodge = {
 	invokeAfterDelayParams(_onEndAnim,0.4,[_mob]);
 };
 
-anim_doParry = {
+decl(void(actor;int;int)) anim_doParry = {
 	params ["_mob","_idxHand","_enumParry"];
 	
 	private _stateDat = ["naR","naL","nlR","nlL"];
@@ -349,7 +350,7 @@ anim_doParry = {
 //! todo implement new attaching logics
 
 //с помощью этого метода можно контролирвать анимированные атачи
-anim_addAttach = {
+decl(void(mesh;any[])) anim_addAttach = {
 	params ["_dest","_ctxAtt"];
 	_dest attachTo _ctxAtt;
 	private _mob = _ctxAtt select 0;
@@ -361,14 +362,14 @@ anim_addAttach = {
 	_fd set [hashValue _dest,[_dest,_ctxAtt]];
 };
 
-anim_removeAttach = {
+decl(void(mesh;actor)) anim_removeAttach = {
 	params ["_dest","_src"];
 	private _fd = _src getvariable "__anim_internal_att_frdt";
 	if isNullVar(_fd) exitWith {};
 	_fd deleteAt (hashValue _src);
 };
 
-anim_syncOnFrameAttaches = {
+decl(void(actor)) anim_syncOnFrameAttaches = {
 	params ["_mob"];
 	//{_x setposatl (getposatl _x); _x attachto [_obj,[0,0,0],"head",true]} foreach (attachedobjects _obj);
 	{

@@ -4,9 +4,9 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-
-cc_setCombatMode = {
+decl(void(actor;bool;bool;bool)) cc_setCombatMode = {
 	params ["_mob","_mode",["_needSyncCameraAnim",false],["_doSkipApplyMove",false]];
 
 	if (!local _mob) exitWith {

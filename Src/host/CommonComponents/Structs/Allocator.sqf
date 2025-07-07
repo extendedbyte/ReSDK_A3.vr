@@ -3,8 +3,10 @@
 // sdk.relicta.ru
 // ======================================================
 
+#include <..\..\lang.hpp>
+
 //only one reference to allocator
-mmr_allocator_s = null;
+decl(struct) mmr_allocator_s = null;
 //for initialize use:  mmr_allocator_s = struct_new(DefaultAllocator);
 
 //use STRUCT_ROOT_TYPE StructBase for use allocator functionality

@@ -4,8 +4,9 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-model_getAssoc = {
+decl(string|int(string|int)) model_getAssoc = {
 	params ["_value"];
 	
 	private _hashmap = if equalTypes(_value,"") then {_value = tolower _value;core_assoc_model2id} else {core_assoc_id2model};
@@ -24,7 +25,7 @@ call compile preprocessFileLineNumbers "src\M2C.sqf";
 #include <ModelTransform.hpp>
 
 #ifdef DEBUG
-model_debug_dumpAllModels = {
+decl(void()) model_debug_dumpAllModels = {
 	model_debug_output_dump = [];
 	model_debug_map_all = createHashMap;
 	for "_i" from 0 to count configFile do {

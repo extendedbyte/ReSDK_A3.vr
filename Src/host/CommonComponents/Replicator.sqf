@@ -4,8 +4,9 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-repl_map_funcs = createHashMapFromArray [
+decl(map<string;code>) repl_map_funcs = createHashMapFromArray [
 	["setVelocity",{(_this select 0) setVelocity (_this select 1)}],
 	["collisionOff",{(_this select 0) disableCollisionWith (_this select 1)}],
 	["addBackpack",{(_this select 0) addBackpack (_this select 1)}],

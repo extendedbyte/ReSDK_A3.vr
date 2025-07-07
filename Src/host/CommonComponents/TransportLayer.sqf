@@ -3,6 +3,7 @@
 // sdk.relicta.ru
 // ======================================================
 
+#include <..\lang.hpp>
 
 //network transport layer
 
@@ -29,8 +30,8 @@ server_toclient_rpcs = [1,"serverrpctest"] < as build
 Данный функционал рекомендуется реализовать при низкой производительности
 
 */
-rpc_servermap = createHashMap;
-rpc_internal_regEnum_server = {
+decl(map<string;int>) rpc_servermap = createHashMap;
+decl(void(string)) rpc_internal_regEnum_server = {
 	params ["_enumName"];
 
 	if (!isNull(pc_servermap get _enumName)) exitWith {

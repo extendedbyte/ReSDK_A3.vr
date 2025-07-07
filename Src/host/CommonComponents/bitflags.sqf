@@ -3,9 +3,9 @@
 // sdk.relicta.ru
 // ======================================================
 
+#include <..\lang.hpp>
 
-
-bitwise_and = {
+decl(int(int;int)) bitwise_and = {
 	params [["_num1", 0, [0]], ["_num2", 0, [0]], "_num1rem", "_num2rem"];
 
 	private _res = 0;
@@ -26,7 +26,7 @@ bitwise_and = {
 	_res
 };
 
-bitwise_or = {
+decl(int(int;int)) bitwise_or = {
 	params [["_num1", 0, [0]], ["_num2", 0, [0]], "_num1rem", "_num2rem"];
 
 	private _res = 0;
@@ -45,7 +45,7 @@ bitwise_or = {
 	_res
 };
 
-bitwise_xor = {
+decl(int(int;int)) bitwise_xor = {
 	params [["_num1", 0, [0]], ["_num2", 0, [0]], "_num1rem", "_num2rem"];
 
 	private _res = 0;
@@ -64,7 +64,7 @@ bitwise_xor = {
 	_res
 };
 
-bitwise_not = {
+decl(int(int;int)) bitwise_not = {
 	params [["_num", 0, [0]], "_numrem"];
 
 	private _res = 0;
@@ -81,31 +81,31 @@ bitwise_not = {
 	_res
 };
 
-bit_set = {
+decl(int(int;int)) bit_set = {
 	params ["_flagset", "_flags"];
 
 	[_flagset, _flags] call bitwise_or;
 };
 
-bit_unset = {
+decl(int(int;int)) bit_unset = {
 	params ["_flagset", "_flags"];
 
 	[_flagset, _flags call bitwise_not] call bitwise_and
 };
 
-bit_flip = {
+decl(int(int;int)) bit_flip = {
 	params ["_flagset", "_flags"];
 
 	[_flagset, _flags] call bitwise_xor
 };
 
-bit_check = {
+decl(bool(int;int)) bit_check = {
 	params ["_flagset", "_flags"];
 
 	([_flagset, _flags] call bitwise_and) > 0
 };
 
-bit_toArray = {
+decl(int[](int)) bit_toArray = {
 	params [["_flags", 0], "_flag"];
 
 	private _result = [];

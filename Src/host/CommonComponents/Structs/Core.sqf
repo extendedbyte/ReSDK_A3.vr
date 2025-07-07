@@ -3,6 +3,7 @@
 // sdk.relicta.ru
 // ======================================================
 
+#include <..\..\lang.hpp>
 
 struct(Thread_)
 	def(__threadId) -1;
