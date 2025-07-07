@@ -8,7 +8,7 @@
 struct(LocEffBase)
     decl(string) def(name) ""
 
-    decl(any) def(_context) null;
+    decl(mesh|NULL) def(_context) null;
 
     decl(string) def(str)
     {
@@ -36,7 +36,7 @@ struct(LocEffBase)
         self setv(_context,_ctx);
     }
 
-    decl(any())
+    decl(NULL|mesh())
     def(getContext)
     {
         self getv(_context);

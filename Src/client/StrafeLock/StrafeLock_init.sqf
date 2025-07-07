@@ -42,7 +42,7 @@ decl(int)
 strafeLock_handleKeyUp = -1;
 decl(int)
 strafeLock_handle = -1;
-decl(any[])
+decl(int[])
 strafeLock_const_lrButtons = LEFT_MOVE_BUTTONS + RIGHT_MOVE_BUTTONS;
 decl(bool)
 strafeLock_catched = false;

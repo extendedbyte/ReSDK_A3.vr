@@ -125,8 +125,8 @@ macro_def(music_debugMode)
 playMusic "";
 0 fadeMusic 1;
 
-decl(any[]) music_internal_priority = [];
-decl(any[]) music_internal_paused = [];
+decl(map<string;any>[]) music_internal_priority = [];
+decl(bool[]) music_internal_paused = [];
 decl(int) music_internal_lastPriority = -1;
 
 _buffer = [];

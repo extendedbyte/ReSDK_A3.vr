@@ -173,7 +173,7 @@ if !isNullVar(sound3d_internal_list_soundBuff) then {
 };
 #endif
 
-decl(any[])
+decl(tuple<mesh;int;float;any[]>[])
 sound3d_internal_list_soundBuff = [];
 sound3d_internal_handle3dSounds = -1;
 decl(void())
