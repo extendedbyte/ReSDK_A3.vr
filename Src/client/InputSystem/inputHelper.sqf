@@ -30,7 +30,7 @@ decl(bool)
 inputHelper_isSuccessCurrentTask = false; //системная переменная для выполнения внутренней задачи
 
 //Базовые задачи это первый вход
-decl(any[])
+decl(tuple<string;string;code;code>[])
 inputHelper_basicTask = [
 	["","",{isLobbyOpen || call client_isInGame},{
 
