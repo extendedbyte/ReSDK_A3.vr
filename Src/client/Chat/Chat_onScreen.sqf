@@ -250,7 +250,7 @@ chatos_canSeeObject = {
 	false
 };
 
-decl(any[])
+decl(tuple<float;float;tuple<actor;float;string;float;string>;float;float>[])
 chatos_list_blobMobs = [];
 
 chatos_actBlob = {
