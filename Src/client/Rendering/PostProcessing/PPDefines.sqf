@@ -90,7 +90,7 @@ decl(float) pp_pain_timing = 2;
 }] call pp_init_active;
 
 
-decl(any[]) pp_agony_data = [false,0];
+decl(tuple<bool;float>) pp_agony_data = [false,0];
 ["agony","ChromAberration",[0,0,true],null,{
 	if (!(pp_agony_data select 0)) exitWith {};
 	pp_agony_data set [0,false];

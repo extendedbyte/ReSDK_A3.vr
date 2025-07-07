@@ -26,9 +26,9 @@ if (!isNullVar(pp_allEffects)) then {
 	};
 };
 
-decl(any[])
+decl(tuple<string;string;array;array;code;float;code;bool;bool>[])
 pp_buffer_efx = [];
-decl(any[])
+decl(int[])
 pp_allEffects = [];
 decl(int)
 pp_uniIndex = 5000;

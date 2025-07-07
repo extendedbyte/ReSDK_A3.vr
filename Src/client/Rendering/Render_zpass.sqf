@@ -11,7 +11,7 @@ namespace(Rendering.Occlusion,render_)
 
 //возвращает коллекцию информации объектов. 
 // list<vec3(distancetocam,list<screenproj>,metaObject)>
-decl(any[](vector3;mesh[]))
+decl(tuple<float;vector2[];mesh>[](vector3;mesh[]))
 render_zpass_getObjBBX = {
 	params ["_cameraPos","_objlist"];
 	private _sortedObjects = [];
