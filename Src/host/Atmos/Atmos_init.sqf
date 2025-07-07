@@ -5,6 +5,7 @@
 
 
 #include "..\engine.hpp"
+#include "..\lang.hpp"
 #include "..\struct.hpp"
 #include "..\profiling.hpp"
 #include "..\ServerRpc\serverRpc.hpp"
@@ -25,20 +26,20 @@
 #endif
 
 //chunks references used for effector
-atmos_map_chunks = createHashMap; //key:str(chunkloc) -> value(struct:AtmosChunk)
+decl(map<string;struct>) atmos_map_chunks = createHashMap; //key:str(chunkloc) -> value(struct:AtmosChunk)
 
 //area used for sync data
-atmos_map_chunkAreas = createHashMap; //key: str chunkArea, value (list<AtmosChunks>)
-atmos_handle_update = -1;
-atmos_chunks_uniqIdx = 0;
+decl(map<string;any[]>) atmos_map_chunkAreas = createHashMap; //key: str chunkArea, value (list<AtmosChunks>)
+decl(int) atmos_handle_update = -1;
+decl(int) atmos_chunks_uniqIdx = 0;
 
-atmos_chunks = 0;
-atmos_areas = 0;
+decl(int) atmos_chunks = 0;
+decl(int) atmos_areas = 0;
 
-atmos_areaPtrRefPool = ["AtmosAreaRefPool"] call SafeReference_CreatePool;
+decl(any) atmos_areaPtrRefPool = ["AtmosAreaRefPool"] call SafeReference_CreatePool;
 
 //returns chunk by id, creates new if not exists
-atmos_getChunkAtChId = {
+decl(struct(vector3)) atmos_getChunkAtChId = {
 	params ["_chId"];
 	assert(equalTypes(_chId,[]));
 	private _strKey = str _chId;
@@ -55,7 +56,7 @@ atmos_getChunkAtChId = {
 };
 
 //returns chunk by id
-atmos_getChunkAtChIdUnsafe = {
+decl(struct|NULL(vector3)) atmos_getChunkAtChIdUnsafe = {
 	params ["_chId"];
 	assert(equalTypes(_chId,[]));
 	private _strKey = str _chId;
@@ -63,7 +64,7 @@ atmos_getChunkAtChIdUnsafe = {
 };
 
 //returns area by id
-atmos_getAreaAtAid = {
+decl(any[](vector3)) atmos_getAreaAtAid = {
 	params ["_aid"];
 	assert(equalTypes(_aid,[]));
 	private _strkey = str _aid;

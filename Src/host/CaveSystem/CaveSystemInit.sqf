@@ -3,6 +3,8 @@
 // sdk.relicta.ru
 // ======================================================
 
+#include "..\lang.hpp"
+
 /*
 Logger.Log("INIT");
 float time = Time.TickTime;

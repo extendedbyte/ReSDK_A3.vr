@@ -5,6 +5,7 @@
 
 #include "..\oop.hpp"
 #include "..\engine.hpp"
+#include "..\lang.hpp"
 #include "..\text.hpp"
 #include <..\ServerRpc\serverRpc.hpp>
 #include <..\GamemodeManager\GamemodeManager.hpp>

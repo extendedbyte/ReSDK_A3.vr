@@ -4,6 +4,7 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <..\oop.hpp>
 #include <..\text.hpp>
 #include <..\GameObjects\GameConstants.hpp>
@@ -14,7 +15,7 @@
 
 */
 
-ai_createMob = {
+decl(void(vector3;int[])) ai_createMob = {
 	params ["_pos",["_stats",[10,10,10,10]]];
 
 	private _gMob = _pos call gm_createMob;
@@ -32,7 +33,7 @@ ai_createMob = {
 	[_gMob,_mob] call ai_startSM;
 };
 
-ai_startSM = {
+decl(void(actor;struct)) ai_startSM = {
 	params ["_visual","_virtual"];
 
 	_visual setVariable ["ai_mode","stop"];
@@ -44,7 +45,7 @@ ai_startSM = {
 	_visual setVariable ["ai_handle",_h];
 };
 
-ai_mob_onUpdate = {
+decl(void(tuple<actor;struct>)) ai_mob_onUpdate = {
 	(_this select 0) params ["_vis","_virt"];
 	if (tickTime < (_vis getVariable "ai_lastact")) exitWith {};
 	_state = _vis getVariable "ai_state";

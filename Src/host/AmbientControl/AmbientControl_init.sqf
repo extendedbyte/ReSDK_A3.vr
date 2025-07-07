@@ -5,6 +5,7 @@
 
 #include "..\oop.hpp"
 #include "..\engine.hpp"
+#include "..\lang.hpp"
 #include "..\text.hpp"
 #include "..\GameObjects\GameConstants.hpp"
 #include "..\NOEngine\NOEngine.hpp"
@@ -12,17 +13,17 @@
 //chunkSize_structure
 //CHUNK_TYPE_STRUCTURE
 
-ambctrl_handle = -1;
-ambctrl_calledAmbients = createHashMap;
-ambctrl_nextCallMin = 60 * 1;
-ambctrl_nextCallMax = 60 * 1.5;
+decl(int) ambctrl_handle = -1;
+decl(map<vector2;float>) ambctrl_calledAmbients = createHashMap;
+decl(float) ambctrl_nextCallMin = 60 * 1;
+decl(float) ambctrl_nextCallMax = 60 * 1.5;
 
 #ifdef EDITOR
 //ambctrl_nextCallMin = 5;
 //ambctrl_nextCallMax = 10;
 #endif
 
-ambctrl_onUpdate = {
+decl(void()) ambctrl_onUpdate = {
 	//collect unical locations
 	_mapUnicalPos = createHashMap;
 	_chunk = null;
