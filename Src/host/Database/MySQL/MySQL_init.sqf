@@ -4,6 +4,7 @@
 // ======================================================
 
 #include <..\..\engine.hpp>
+#include <..\..\lang.hpp>
 #include <MySQL.h>
 #include "MySQL_functions.sqf"
 #include "MySQL_manager.sqf"

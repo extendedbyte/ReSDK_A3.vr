@@ -3,9 +3,10 @@
 // sdk.relicta.ru
 // ======================================================
 
+#include "..\lang.hpp"
 
 #define tzndef(name,a,b,c) [name,[a,b,c]]
-gurps_internal_tzn = hashMapNewArgs [ //reference type
+decl(map<int;string[]>) gurps_internal_tzn = hashMapNewArgs [ //reference type
 	tzndef(TARGET_ZONE_TORSO,"грудь","груди","грудь"),
 	tzndef(TARGET_ZONE_ABDOMEN,"живот","животу","живот"),
 	tzndef(TARGET_ZONE_HEAD,"голова","голове","голову"),
@@ -24,7 +25,7 @@ gurps_internal_tzn = hashMapNewArgs [ //reference type
 
 // данная функция выбирает рандомную зону для метания в зависимости от сложности броска _cat которое варьируется от 1 до 3 где 3 это 100% попадание в цель
 //Внимание! Входящая зона как TARGET_ZONE_RANDOM конвертится в реально рандомную часть
-gurps_pickThrowingZone = {
+decl(int(int;int)) gurps_pickThrowingZone = {
 	params ["_sel","_cat"];
 
 	//Сохраняющая конвертация
@@ -49,7 +50,7 @@ gurps_pickThrowingZone = {
 };
 
 //Конвертирует таргет зону в строковое название со склонением
-gurps_convertTargetZoneToString = {
+decl(string(int;int)) gurps_convertTargetZoneToString = {
 	params ["_zoneIndex",["_z_n",TARGET_ZONE_NAME_MAIN]];
 	gurps_internal_tzn get _zoneIndex select _z_n
 };
@@ -61,7 +62,7 @@ gurps_convertTargetZoneToStringSafe = {
 };
 
 
-gurps_internal_tzToSel = hashMapNewArgs [ //reference type
+decl(map<int;string>) gurps_internal_tzToSel = hashMapNewArgs [ //reference type
 		vec2(TARGET_ZONE_TORSO,"spine3"),
 		vec2(TARGET_ZONE_ABDOMEN,"pelvis"),
 		vec2(TARGET_ZONE_HEAD,"head"),

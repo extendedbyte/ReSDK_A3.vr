@@ -5,6 +5,7 @@
 
 #include "..\oop.hpp"
 #include "..\engine.hpp"
+#include "..\lang.hpp"
 #include "..\struct.hpp"
 #include <..\Networking\Network.hpp>
 
@@ -12,19 +13,19 @@ if (IS_INIT_MODULE) then {
 
 
 	//закрыт ли сервер
-	cm_isServerLocked = false;
+	decl(bool) cm_isServerLocked = false;
 
 	//список клиентов на ожидание кика. PreAwaitClientData является значением, ключ uint (clientOwner)
-	cm_preAwaitClientData = hashMapNew;
-	cm_map_ownerToDisIdAssoc = hashMapNew;
+	decl(map<int;struct>) cm_preAwaitClientData = hashMapNew;
+	decl(map<int;string>) cm_map_ownerToDisIdAssoc = hashMapNew;
 
-	cm_allClients = []; //список зарегистрированных объектов клиентов
-	cm_disconnectedClients = hashMapNew; //список дисконнектнутых клиентов. Отсюда берутся все jip-ам
-	cm_allInGameMobs = []; //список всех мобов в игре. Этот массив требуется в основном потоке обработчика карты
+	decl(struct[]) cm_allClients = []; //список зарегистрированных объектов клиентов
+	decl(map<string;struct>) cm_disconnectedClients = hashMapNew; //список дисконнектнутых клиентов. Отсюда берутся все jip-ам
+	decl(actor[]) cm_allInGameMobs = []; //список всех мобов в игре. Этот массив требуется в основном потоке обработчика карты
 		netSetGlobal(smd_allInGameMobs,cm_allInGameMobs);
-	cm_allAwaitMobs = allUnits; //список нераспределённых мобов
+	decl(actor[]) cm_allAwaitMobs = allUnits; //список нераспределённых мобов
 
-	cm_maxClients = 0; //сколько максимально клиентов подключалось
+	decl(int) cm_maxClients = 0; //сколько максимально клиентов подключалось
 
 }; //IS_INIT_MODULE
 
@@ -34,13 +35,13 @@ _tx = table_hex;
 	_x setvariable ["voiceptr","0x" + pick _tx + pick _tx + pick _tx + pick _tx + pick _tx + pick _tx,true]; //generator pointers for voice system
 } foreach cm_allAwaitMobs;
 
-cm_owners = ["76561198094364528"]; //me
+decl(string[]) cm_owners = ["76561198094364528"]; //me
 
 //админы           пони					румын
-cm_admins = ["76561198057042311","76561197994426107"];
+decl(string[]) cm_admins = ["76561198057042311","76561197994426107"];
 
 //игроки              квадрат              krakatuk          борзый             ходовой
-cm_forsakens = ["76561198096453655","76561198072294284","76561198156220735","76561198156220735",
+decl(string[]) cm_forsakens = ["76561198096453655","76561198072294284","76561198156220735","76561198156220735",
 	/*амир*/
 	"76561198247184258",
 	/*лисовик*/
@@ -114,13 +115,13 @@ cm_getAccessByUid = {
 };
 
 #define __mapped(t1,t2) cm_accessMap set [t1,t2]; cm_accessMap_inverted set [t2,t1];
-cm_accessMap = createHashMap;
-cm_accessMap_inverted = createHashMap;
+decl(map<string;int>) cm_accessMap = createHashMap;
+decl(map<int;string>) cm_accessMap_inverted = createHashMap;
 
 // маппинг цвета ника и сообщений по доступу
 #define __colorMap(access,nick,mes) cm_map_nickColor set [access,nick]; cm_map_messagesColor set [access,mes];
-cm_map_nickColor = createHashMap;
-cm_map_messagesColor = createHashMap;
+decl(map<int;string>) cm_map_nickColor = createHashMap;
+decl(map<int;string>) cm_map_messagesColor = createHashMap;
 
 /****************************************************************************
 								MAP ACCESS

@@ -4,6 +4,7 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <Curl.hpp>
 
 
@@ -11,11 +12,11 @@
 
 //#define u_test
 
-curl_send = {
+decl(string(string)) curl_send = {
 	curl(_this)
 };
 
-curl_get = {
+decl(string()) curl_get = {
 	curl("OK")
 };
 
@@ -25,12 +26,12 @@ curl_getstatus = {
 	curl("STATUS")
 };*/
 
-curl_error = {
+decl(string()) curl_error = {
 	curl("ERROR")
 };
 
 
-curl_testName = {
+decl(string(string;string)) curl_testName = {
 	params ["_f","_s"];
 	
 	_nf = str toArray _f;

@@ -4,6 +4,7 @@
 // ======================================================
 
 #include "..\engine.hpp"
+#include "..\lang.hpp"
 #include "..\struct.hpp"
 #include "..\oop.hpp"
 #include <..\text.hpp>

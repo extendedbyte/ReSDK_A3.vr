@@ -4,6 +4,7 @@
 // ======================================================
 
 #include <..\..\engine.hpp>
+#include <..\..\lang.hpp>
 #include <..\..\oop.hpp>
 #include <..\..\text.hpp>
 #include <SQLite.h>
@@ -11,12 +12,12 @@
 #include "SQLite_manager.sqf"
 
 //!версия базы данных (не расширения)
-db_version = "3.0";
+decl(string) db_version = "3.0";
 //true будет выводить каждый запрос в дебаг консоль
-db_canUseQueryLogToStdout = false;
+decl(bool) db_canUseQueryLogToStdout = false;
 
 //Основная функция инициализации базы данных
-db_init = {
+decl(vector2()) db_init = {
 	#ifdef SP_MODE
 	if(true) exitWith {[0,"OK_BUT_SP_MODE"]};
 	#endif

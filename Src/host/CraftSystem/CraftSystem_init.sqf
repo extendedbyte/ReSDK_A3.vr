@@ -16,6 +16,7 @@
 
 */
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 #include <..\struct.hpp>
 #include <..\text.hpp>
 #include "..\ServerRpc\serverRpc.hpp"
@@ -33,28 +34,28 @@
 #include "CraftSystemProcess.sqf"
 
 //key int, val ICraftRecipeBase
-csys_map_allCraftRefs = createHashMap;
+decl(map<int;struct>) csys_map_allCraftRefs = createHashMap;
 //key string(typename) as target, val array<ICraftRecipeBase>
-csys_map_allInteractiveCrafts = createHashMap;
+decl(map<string;struct[]>) csys_map_allInteractiveCrafts = createHashMap;
 //key string(typename), val array<ICraftRecipeBase>
-csys_map_allSystemCrafts = createHashMap; //! В будущем можно перенести хранение буферов крафтов на типы классов
+decl(map<string;struct[]>) csys_map_allSystemCrafts = createHashMap; //! В будущем можно перенести хранение буферов крафтов на типы классов
 
 //глобальное хранилище крафтов по категориям, key int(id), val array<ICraftRecipeBase>
-csys_map_storage = createhashMap; 
+decl(map<int;struct[]>) csys_map_storage = createhashMap; 
 
 //системные крафты...
-csys_map_systems_storage = createhashMap;
+decl(map<int;struct[]>) csys_map_systems_storage = createhashMap;
 
-csys_global_counter = 1;
+decl(int) csys_global_counter = 1;
 
-csys_cat_map_sysnames = createHashMap;
-csys_cat_getSystemNameById = { csys_cat_map_sysnames get _this };
+decl(map<string;int>) csys_cat_map_sysnames = createHashMap;
+decl(string(int)) csys_cat_getSystemNameById = { csys_cat_map_sysnames get _this };
 
 #ifdef DEBUG
-csys_cat_debug_allCrafts = [];
+decl(struct[]) csys_cat_debug_allCrafts = [];
 #endif
 
-csys_init = {
+decl(void()) csys_init = {
 
 
 	{
