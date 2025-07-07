@@ -7,7 +7,7 @@
 
 namespace(Input,input_;cd_)
 
-decl(any[])
+decl(bool[])
 input__ikdp = [];
 
 
@@ -23,7 +23,7 @@ macro_func(input_keyDefArgs,any[](string;bool;bool;bool;bool))
 #define std_keyArgs(name,shift,ctrl,alt,isMouse) keybind([name arg false] call input_getKeyValue,shift,ctrl,alt,isMouse)
 
  // Список кейбиндов
-decl(any[][])
+decl(tuple<string;string;tuple<int;bool;bool;bool;bool>;tuple<int;bool;bool;bool;bool>;string;tuple<int;bool;bool;bool;bool>>[])
 cd_settingsKeyboard = [
 	kb("Инвентарь","Открыть или закрыть инвентарь",std_key("TAB"),"input_act_inventory"),
 	kb("Бросить","Выпустить предмет из активной руки",std_key("G"),"input_act_dropitem"),
