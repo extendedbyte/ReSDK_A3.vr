@@ -4,24 +4,21 @@
 // ======================================================
 
 #include <..\engine.hpp>
+#include <..\lang.hpp>
 
-// algorithm helpers
+//algorithm helpers namespace not set to avoid renaming; just annotate
 
-//enable static tests
-//#define __ENABLE_ALGORITHM_TEST___
-
-
-allOf = {
+decl(bool(any[])) allOf = {
 	params ["_list"];
 	!(false in _list)
 };
 
-anyOf = {
+decl(bool(any[])) anyOf = {
 	params ["_list"];
 	true in _list
 };
 
-noneOf = {
+decl(bool(any[])) noneOf = {
 	params ["_list"];
 	!(true in _list)
 };

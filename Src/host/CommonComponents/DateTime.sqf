@@ -10,7 +10,8 @@
 // [year, month, day, hour, minute, second, millisecond]
 
 //Конвертация даты и времени в строку
-dateTime_toString = {
+
+decl(string(any[];bool;bool)) dateTime_toString = {
 	params ["_dt",["_zero",false],["_outms",false]];
 
 	#define applyficator(val) (if (val < 10 && _zero) then {"0" + str val} else {str val})
