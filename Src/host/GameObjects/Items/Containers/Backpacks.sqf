@@ -129,13 +129,7 @@ class(KeyChain) extends(Container)
 					callFuncParams(_loc,addItem,_key arg _keyChainSlot);
 				};
 			};
-			getSelf(content) deleteAt 0;
-			callSelf(onContainerContentUpdate);
-			setSelf(countSlots,0);
 			callSelf(closeContainerForAll);
-			if (_isInWorld) then {
-				callSelf(unloadModel);
-			};
 			callFuncParams(this,playSound,"updown\keyring_up" arg getRandomPitchInRange(0.9,1.1));
 			delete(this);
 		};
